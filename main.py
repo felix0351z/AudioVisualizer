@@ -11,12 +11,13 @@ import melbank as mel
 import processing as ps
 
 # Pfad der Audio-Datei
-INPUT_PAH = "/home/felix/Musik/3.wav"
-# Anzahl der Berechnungen pro Sekunde
-FPS = 20
+INPUT_PAH = "/home/felix/Musik/4.wav"
 
 FFT_BANDS = 1024
 MEL_BANDS = 40
+
+FREQ_TIME = 20
+WAVE_TIME = 50
 
 # Verhältnis vom Abstand eines Frames zu seiner Länge
 B = 2.5
@@ -61,7 +62,7 @@ class Program:
         """
         wave_Canvas: pg.PlotItem = self.win.addPlot(title="Waveform", row=0, col=0)
         wave_Canvas.setXRange(0, self.sample_rate)  # Immer eine Sekunde
-        wave_Canvas.setYRange(-40000, 40000)  # Ungefähre Amplituden Höchstwerte
+        wave_Canvas.setYRange(-0.5, 0.5)  # Ungefähre Amplituden Höchstwerte
 
         # Liste von 1 bis SampleRate für WavePlot
         x = np.arange(1, self.sample_rate + 1)
@@ -89,9 +90,9 @@ class Program:
         angepasst ist.
         :return: Mel bank-Spectrum Plot, xAxis
         """
-        melCanvas: pg.PlotItem = self.win.addPlot(title="Melbars Sectrum", row=1, col=1)
+        melCanvas: pg.PlotItem = self.win.addPlot(title="Melbars Sectrum", row=0, col=1)
         melCanvas.setYRange(0, 1)
-        melCanvas.setXRange(0, 42)  # 40 Peaks werden genutzt
+        melCanvas.setXRange(0, mel.hertz_to_mel(20000))  # 40 Peaks werden genutzt
 
         # Liste mit N_MEL Einträgen. Von 0 Hz bis 20000Hz skaliert in Mel
         x = np.linspace(0, mel.hertz_to_mel(20000), MEL_BANDS)
@@ -115,7 +116,7 @@ class Program:
         :return: Converted Wav-Form, Audio-Frames
         """
         # Die Anzahl der Diraktstöße muss auf die Anzahl der Frames (FPS) aufgeteilt werden
-        frame_st = int(self.sample_rate / FPS)
+        frame_st = int(self.sample_rate / (1000 / FREQ_TIME))
         # Die Länge des Frames ist um B größer als der Abstand untereinander
         frame_len = int(frame_st * B)
 
@@ -140,13 +141,13 @@ class Program:
         self.spectrum_plot.setData(x=self.x_spectrum, y=y_spectrum)
         self.mel_plot.setData(x=self.x_mel, y=y_mel)
 
-    def update_plot(self):
+    def update_plot20s(self):
         """
         Updaten der Signale in den Plots.
         Wird vom QTimer FPS_mal in der Sekunde aufgerufen.
         """
         # Sample_Rate / FPS => Dirakstöße in einem Zyklus
-        amount_samples = int(self.sample_rate / FPS)
+        amount_samples = int(self.sample_rate / (1000 / WAVE_TIME))
 
         # Alle Diraktstöße vom letzten Update entfernen
         self.data = np.delete(self.data, np.arange(0, amount_samples))
@@ -154,12 +155,17 @@ class Program:
         # Falls die Länge für keinen Zyklus mehr reicht, oder
         # kein weiteres Frame mehr existiert
         # muss beendet werden
-        if ((len(self.data)) <= amount_samples) or (self.current_frame > len(self.frames)):
+        if (len(self.data)) <= amount_samples:
             self.app.exit()
             return
 
         # Updaten des WavePlots
         self.wave_plot.setData(x=self.x_wave, y=self.data[:self.sample_rate])
+
+    def update_plot60s(self):
+        if self.current_frame > len(self.frames):
+            self.app.exit()
+            return
 
         # Updaten des SpektrumPlots
         fft_frame = ps.rfft(self.frames[self.current_frame], n=FFT_BANDS)
@@ -167,7 +173,19 @@ class Program:
         self.spectrum_plot.setData(x=self.x_spectrum, y=spectrum_frame)
 
         # Updaten des Mel Plots
-        # TODO
+        melmat = mel.compute_melmatrix(
+            num_mel_bands=MEL_BANDS,
+            freq_min=0,
+            freq_max=8000,
+            num_fft_bands=int(FFT_BANDS / 2)
+        )
+
+        # Melspektrum mit den FFT Daten verrechnen
+        mel_frames = np.atleast_2d(ps.get_power_frames(fft_frame, FFT_BANDS)) * melmat
+        mels = np.sum(mel_frames, axis=1)
+        melslog = np.log(mels + 1)
+
+        self.mel_plot.setData(x=self.x_mel, y=melslog)
 
         self.current_frame += 1
 
@@ -175,12 +193,15 @@ class Program:
         """
         Initialisieren des Plots, generieren des Timers und starten des Programs
         """
-
         self.initialize_plot()
 
-        timer = QtCore.QTimer()
-        timer.timeout.connect(self.update_plot)
-        timer.start(int(1000 / FPS))  # FPS zu ms
+        #timer = QtCore.QTimer()
+        #timer.timeout.connect(self.update_plot20s)
+        #timer.start(WAVE_TIME)  # 20 FPS
+
+        freqTimer = QtCore.QTimer()
+        freqTimer.timeout.connect(self.update_plot60s)
+        freqTimer.start(FREQ_TIME)  # 60 FPS
 
         self.playback_task.start()
         self.run()
