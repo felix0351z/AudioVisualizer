@@ -3,7 +3,9 @@ import threading
 
 import numpy as np
 import pyqtgraph as pg
+from exp_filter import SimpleExpFilter
 import scipy.io.wavfile as wav
+from scipy.ndimage.filters import gaussian_filter1d
 from PySide2 import QtWidgets, QtCore
 from pydub import AudioSegment, playback
 
@@ -11,7 +13,7 @@ import melbank as mel
 import processing as ps
 
 # Pfad der Audio-Datei
-INPUT_PAH = "/home/felix/Musik/4.wav"
+INPUT_PAH = "/home/felix/Musik/10.wav"
 
 FFT_BANDS = 1024
 MEL_BANDS = 40
@@ -21,6 +23,10 @@ WAVE_TIME = 50
 
 # Verhältnis vom Abstand eines Frames zu seiner Länge
 B = 2.5
+
+# Werte über 0.1 sollen mehr geglättet werden als Werte hierunter
+mel_gain = SimpleExpFilter(np.tile(1e-1, MEL_BANDS), alpha_decay=0.01, alpha_rise=1.99)
+mel_smoothing = SimpleExpFilter(np.tile(1e-1, MEL_BANDS), alpha_decay=0.5, alpha_rise=1.99)
 
 
 class Program:
@@ -176,16 +182,25 @@ class Program:
         melmat = mel.compute_melmatrix(
             num_mel_bands=MEL_BANDS,
             freq_min=0,
-            freq_max=8000,
+            freq_max=1200,
             num_fft_bands=int(FFT_BANDS / 2)
         )
 
         # Melspektrum mit den FFT Daten verrechnen
         mel_frames = np.atleast_2d(ps.get_power_frames(fft_frame, FFT_BANDS)) * melmat
-        mels = np.sum(mel_frames, axis=1)
-        melslog = np.log(mels + 1)
+        mel_spectrum = np.sum(mel_frames, axis=1)
 
-        self.mel_plot.setData(x=self.x_mel, y=melslog)
+        # Gain Normalization
+        max = np.max(gaussian_filter1d(mel_spectrum, sigma=1.0))
+        mel_gain.update(max)
+        mel_spectrum /= mel_gain.forcast
+
+        # Mel Smoothing
+        mel_spectrum = mel_smoothing.update(mel_spectrum)
+
+        # Logarithmische Darstellung
+        mellog = np.log(mel_spectrum + 1)
+        self.mel_plot.setData(x=self.x_mel, y=mel_spectrum)
 
         self.current_frame += 1
 
@@ -195,9 +210,9 @@ class Program:
         """
         self.initialize_plot()
 
-        #timer = QtCore.QTimer()
-        #timer.timeout.connect(self.update_plot20s)
-        #timer.start(WAVE_TIME)  # 20 FPS
+        # timer = QtCore.QTimer()
+        # timer.timeout.connect(self.update_plot20s)
+        # timer.start(WAVE_TIME)  # 20 FPS
 
         freqTimer = QtCore.QTimer()
         freqTimer.timeout.connect(self.update_plot60s)

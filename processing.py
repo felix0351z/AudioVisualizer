@@ -28,7 +28,7 @@ def pre_emphasis(data):
     # einen Vor-Filter auf das Signal zu legen, welches die Frequenzen normalisiert.
     a = 0.94
     new_signal = np.append(data[0], data[1:] - a * data[:-1])
-    new_signal = new_signal / 2**19
+    new_signal = new_signal / 2**17
 
     return new_signal
 
@@ -93,5 +93,4 @@ def get_power_frames(frame, N):
     :return: 1D Power Frame
     """
     pow_frame = ((1.0 / (N / 2) * 2 + 1) * (frame ** 2))
-    #return np.log10(pow_frame + 1)
     return pow_frame
