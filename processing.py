@@ -28,7 +28,7 @@ def pre_emphasis(data):
     # einen Vor-Filter auf das Signal zu legen, welches die Frequenzen normalisiert.
     a = 0.94
     new_signal = np.append(data[0], data[1:] - a * data[:-1])
-    new_signal = new_signal / 2**17
+    new_signal = new_signal / 2 ** 17
 
     return new_signal
 
@@ -94,3 +94,16 @@ def get_power_frames(frame, N):
     """
     pow_frame = ((1.0 / (N / 2) * 2 + 1) * (frame ** 2))
     return pow_frame
+
+
+def interpolate(frame, N: int):
+    """
+    Ändert die Größe des Frames
+    :param frame:1D Audio-Frame
+    :param N: Neue Länge
+    :return: Neu angeordneter Frame
+    """
+    x = np.linspace(0, 1, N)
+    xp = np.linspace(0, 1, len(frame))
+
+    return np.interp(x, xp, frame)

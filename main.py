@@ -5,7 +5,7 @@ import numpy as np
 import pyqtgraph as pg
 from exp_filter import SimpleExpFilter
 import scipy.io.wavfile as wav
-from scipy.ndimage.filters import gaussian_filter1d
+from scipy.ndimage import gaussian_filter1d
 from PySide2 import QtWidgets, QtCore
 from pydub import AudioSegment, playback
 
@@ -13,10 +13,11 @@ import melbank as mel
 import processing as ps
 
 # Pfad der Audio-Datei
-INPUT_PAH = "/home/felix/Musik/10.wav"
+INPUT_PAH = "/home/felix/Musik/11.wav"
 
 FFT_BANDS = 1024
 MEL_BANDS = 40
+N_PIXELS = 60
 
 FREQ_TIME = 20
 WAVE_TIME = 50
@@ -24,9 +25,16 @@ WAVE_TIME = 50
 # Verhältnis vom Abstand eines Frames zu seiner Länge
 B = 2.5
 
+PLOT_OUTPUT = True
+
 # Werte über 0.1 sollen mehr geglättet werden als Werte hierunter
-mel_gain = SimpleExpFilter(np.tile(1e-1, MEL_BANDS), alpha_decay=0.01, alpha_rise=1.99)
-mel_smoothing = SimpleExpFilter(np.tile(1e-1, MEL_BANDS), alpha_decay=0.5, alpha_rise=1.99)
+mel_gain = SimpleExpFilter(np.tile(0.01, MEL_BANDS), alpha_decay=0.01, alpha_rise=0.99)
+mel_smoothing = SimpleExpFilter(np.tile(0.01, MEL_BANDS), alpha_decay=0.5, alpha_rise=0.99)
+
+r_filt = SimpleExpFilter(np.tile(0.01, N_PIXELS // 2), alpha_decay=0.2, alpha_rise=0.99)
+b_filt = SimpleExpFilter(np.tile(0.01, N_PIXELS // 2), alpha_decay=0.1, alpha_rise=0.5)
+
+common_mode = SimpleExpFilter(np.tile(0.01, N_PIXELS // 2), alpha_decay=0.99, alpha_rise=0.01)
 
 
 class Program:
@@ -53,12 +61,16 @@ class Program:
         # Generieren des Wiedergabe-Tasks
         self.playback_task = self.initialize_audio_task()
 
+        self.prev_output = None
+
         # Wave
         self.wave_plot, self.x_wave = self.plot_waveform()
         # Original-Spectrum
         self.spectrum_plot, self.x_spectrum = self.plot_spectrum()
         # Mel bank Spectrum Plot
         self.mel_plot, self.x_mel = self.plot_mel_spectrum()
+        # LED Output
+        self.r, self.g, self.b, self.x_led = self.plot_led_output()
 
     def plot_waveform(self):
         """
@@ -105,6 +117,31 @@ class Program:
 
         return melCanvas.plot(), x
 
+    def plot_led_output(self):
+        """
+        LED Output, mit rot, grün und blauem Graphen
+        :return: LED Plot, xAxis
+        """
+
+        ledCanvas: pg.PlotItem = self.win.addPlot(title="LED Output", row=1, col=1, colspan=3)
+        ledCanvas.setYRange(0, 1)
+        ledCanvas.setXRange(0, N_PIXELS)
+
+        # Unterschiedliche Farben jay
+        r_pen = pg.mkPen((255, 30, 30, 200), width=4)
+        g_pen = pg.mkPen((30, 255, 30, 200), width=4)
+        b_pen = pg.mkPen((30, 30, 255, 200), width=4)
+        r_curve = pg.PlotCurveItem(pen=r_pen)
+        g_curve = pg.PlotCurveItem(pen=g_pen)
+        b_curve = pg.PlotCurveItem(pen=b_pen)
+        ledCanvas.addItem(r_curve)
+        ledCanvas.addItem(g_curve)
+        ledCanvas.addItem(b_curve)
+
+        x = np.arange(1, N_PIXELS+1)
+
+        return r_curve, g_curve, b_curve, x
+
     def initialize_audio_task(self):
         """
         Erstellt einen Wiedergabe-Task für die zu spielende Audio-Datei
@@ -121,8 +158,9 @@ class Program:
         :param data: WavData als 2D List
         :return: Converted Wav-Form, Audio-Frames
         """
+        MILLIS = FREQ_TIME if PLOT_OUTPUT else WAVE_TIME
         # Die Anzahl der Diraktstöße muss auf die Anzahl der Frames (FPS) aufgeteilt werden
-        frame_st = int(self.sample_rate / (1000 / FREQ_TIME))
+        frame_st = int(self.sample_rate / (1000 / MILLIS))
         # Die Länge des Frames ist um B größer als der Abstand untereinander
         frame_len = int(frame_st * B)
 
@@ -143,9 +181,15 @@ class Program:
         # Ganzen Bereich (N_MEL) mit 0en füllen
         y_mel = np.zeros(MEL_BANDS)
 
+        y_led = np.zeros(N_PIXELS)
+
         self.wave_plot.setData(x=self.x_wave, y=y_wave)
         self.spectrum_plot.setData(x=self.x_spectrum, y=y_spectrum)
         self.mel_plot.setData(x=self.x_mel, y=y_mel)
+
+        self.r.setData(x=self.x_led, y=y_led)
+        self.g.setData(x=self.x_led, y=y_led)
+        self.b.setData(x=self.x_led, y=y_led)
 
     def update_plot20s(self):
         """
@@ -168,8 +212,7 @@ class Program:
         # Updaten des WavePlots
         self.wave_plot.setData(x=self.x_wave, y=self.data[:self.sample_rate])
 
-    def update_plot60s(self):
-        if self.current_frame > len(self.frames):
+        if self.current_frame >= len(self.frames):
             self.app.exit()
             return
 
@@ -178,6 +221,12 @@ class Program:
         spectrum_frame = ps.get_formatted_frames(fft_frame)
         self.spectrum_plot.setData(x=self.x_spectrum, y=spectrum_frame)
 
+    def update_plot60s(self):
+        if self.current_frame >= len(self.frames):
+            self.app.exit()
+            return
+
+        fft_frame = ps.rfft(self.frames[self.current_frame], n=FFT_BANDS)
         # Updaten des Mel Plots
         melmat = mel.compute_melmatrix(
             num_mel_bands=MEL_BANDS,
@@ -194,14 +243,30 @@ class Program:
         max = np.max(gaussian_filter1d(mel_spectrum, sigma=1.0))
         mel_gain.update(max)
         mel_spectrum /= mel_gain.forcast
-
         # Mel Smoothing
         mel_spectrum = mel_smoothing.update(mel_spectrum)
 
         # Logarithmische Darstellung
         mellog = np.log(mel_spectrum + 1)
-        self.mel_plot.setData(x=self.x_mel, y=mel_spectrum)
+        self.mel_plot.setData(x=self.x_mel, y=mellog)
 
+        # Größe auf die Anzahl der LED ändern
+        output = ps.interpolate(mellog, N_PIXELS // 2)
+        filtered_output = common_mode.update(output)
+
+        if self.prev_output is None:
+            self.prev_output = output
+
+        # Filter auf die jeweiligen Farbsignale legen
+        r = r_filt.update(output - filtered_output)
+        g = np.abs(output - self.prev_output)
+        b = b_filt.update(output)
+
+        self.r.setData(x=self.x_led, y=np.append(np.flip(r), r))
+        self.g.setData(x=self.x_led, y=np.append(np.flip(g), g))
+        self.b.setData(x=self.x_led, y=np.append(np.flip(b), b))
+
+        self.prev_output = output
         self.current_frame += 1
 
     def start(self):
@@ -210,13 +275,16 @@ class Program:
         """
         self.initialize_plot()
 
-        # timer = QtCore.QTimer()
-        # timer.timeout.connect(self.update_plot20s)
-        # timer.start(WAVE_TIME)  # 20 FPS
+        timer = QtCore.QTimer()
+        timer.timeout.connect(self.update_plot20s)
 
         freqTimer = QtCore.QTimer()
         freqTimer.timeout.connect(self.update_plot60s)
-        freqTimer.start(FREQ_TIME)  # 60 FPS
+
+        if PLOT_OUTPUT:
+            freqTimer.start(FREQ_TIME)  # 60 FPS für Output
+        else:
+            timer.start(WAVE_TIME)  # 20 FPS für Waveform + Spectrum
 
         self.playback_task.start()
         self.run()
