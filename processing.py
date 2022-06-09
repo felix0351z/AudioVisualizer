@@ -26,9 +26,9 @@ def pre_emphasis(data):
     # Bei einem digitalen Signal sind laute Hoch-Signale oft viel kleiner als laute Tief-Signale
     # daher macht es Sinn, um auch bessere Ergebnisse bei der Fourier Transformation zu erzielen,
     # einen Vor-Filter auf das Signal zu legen, welches die Frequenzen normalisiert.
-    a = 0.94
+    a = 0.9
     new_signal = np.append(data[0], data[1:] - a * data[:-1])
-    new_signal = new_signal / 2 ** 17
+    new_signal = new_signal / 2 ** 15
 
     return new_signal
 
@@ -69,7 +69,7 @@ def rfft(frame, n=1024):
     """
     fft_frame = np.fft.rfft(frame, n)
     # Nur positive Signale
-    return np.absolute(fft_frame[:int(n / 2)])
+    return np.absolute(fft_frame[:int(n/2)])
 
 
 def get_formatted_frames(frame):
@@ -92,7 +92,7 @@ def get_power_frames(frame, N):
     :param frame: 1D Fourier Frame
     :return: 1D Power Frame
     """
-    pow_frame = ((1.0 / (N / 2) * 2 + 1) * (frame ** 2))
+    pow_frame = ((1.0 / (N/2) * 2 + 1) * (frame ** 2))
     return pow_frame
 
 

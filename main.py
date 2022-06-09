@@ -13,14 +13,17 @@ import melbank as mel
 import processing as ps
 
 # Pfad der Audio-Datei
-INPUT_PAH = "/home/felix/Musik/11.wav"
+INPUT_PAH = "/home/felix/Musik/4.wav"
 
 FFT_BANDS = 1024
-MEL_BANDS = 40
+MEL_BANDS = 30
 N_PIXELS = 60
 
 FREQ_TIME = 20
 WAVE_TIME = 50
+
+MIN_FREQ = 64
+MAX_FREQ = 12000
 
 # Verhältnis vom Abstand eines Frames zu seiner Länge
 B = 2.5
@@ -230,9 +233,9 @@ class Program:
         # Updaten des Mel Plots
         melmat = mel.compute_melmatrix(
             num_mel_bands=MEL_BANDS,
-            freq_min=0,
-            freq_max=1200,
-            num_fft_bands=int(FFT_BANDS / 2)
+            freq_min=MIN_FREQ,
+            freq_max=MAX_FREQ,
+            num_fft_bands=int(FFT_BANDS/2)
         )
 
         # Melspektrum mit den FFT Daten verrechnen
@@ -255,7 +258,7 @@ class Program:
         filtered_output = common_mode.update(output)
 
         if self.prev_output is None:
-            self.prev_output = output
+            self.prev_output = np.copy(output)
 
         # Filter auf die jeweiligen Farbsignale legen
         r = r_filt.update(output - filtered_output)
@@ -266,7 +269,7 @@ class Program:
         self.g.setData(x=self.x_led, y=np.append(np.flip(g), g))
         self.b.setData(x=self.x_led, y=np.append(np.flip(b), b))
 
-        self.prev_output = output
+        self.prev_output = np.copy(output)
         self.current_frame += 1
 
     def start(self):
