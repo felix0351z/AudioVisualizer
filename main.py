@@ -3,6 +3,7 @@ import threading
 
 import numpy as np
 import pyqtgraph as pg
+import sacn
 from exp_filter import SimpleExpFilter
 import scipy.io.wavfile as wav
 from scipy.ndimage import gaussian_filter1d
@@ -13,17 +14,20 @@ import melbank as mel
 import processing as ps
 
 # Pfad der Audio-Datei
-INPUT_PAH = "/home/felix/Musik/4.wav"
+INPUT_PAH = "/home/felix/Musik/10.wav"
 
 FFT_BANDS = 1024
 MEL_BANDS = 30
 N_PIXELS = 60
 
-FREQ_TIME = 20
+FREQ_TIME = 25
 WAVE_TIME = 50
 
 MIN_FREQ = 64
 MAX_FREQ = 12000
+
+ON_ESP = True
+ESP_ADRESS = "192.168.178.160"
 
 # Verhältnis vom Abstand eines Frames zu seiner Länge
 B = 2.5
@@ -74,6 +78,9 @@ class Program:
         self.mel_plot, self.x_mel = self.plot_mel_spectrum()
         # LED Output
         self.r, self.g, self.b, self.x_led = self.plot_led_output()
+
+        # SACN Sender
+        self.sender = sacn.sACNsender()
 
     def plot_waveform(self):
         """
@@ -141,7 +148,7 @@ class Program:
         ledCanvas.addItem(g_curve)
         ledCanvas.addItem(b_curve)
 
-        x = np.arange(1, N_PIXELS+1)
+        x = np.arange(1, N_PIXELS + 1)
 
         return r_curve, g_curve, b_curve, x
 
@@ -235,7 +242,7 @@ class Program:
             num_mel_bands=MEL_BANDS,
             freq_min=MIN_FREQ,
             freq_max=MAX_FREQ,
-            num_fft_bands=int(FFT_BANDS/2)
+            num_fft_bands=int(FFT_BANDS / 2)
         )
 
         # Melspektrum mit den FFT Daten verrechnen
@@ -265,9 +272,24 @@ class Program:
         g = np.abs(output - self.prev_output)
         b = b_filt.update(output)
 
-        self.r.setData(x=self.x_led, y=np.append(np.flip(r), r))
-        self.g.setData(x=self.x_led, y=np.append(np.flip(g), g))
-        self.b.setData(x=self.x_led, y=np.append(np.flip(b), b))
+        out_r = np.append(np.flip(r), r)
+        out_g = np.append(np.flip(g), g)
+        out_b = np.append(np.flip(b), b)
+        self.r.setData(x=self.x_led, y=out_r)
+        self.g.setData(x=self.x_led, y=out_g)
+        self.b.setData(x=self.x_led, y=out_b)
+
+        # TODO bis 512 auffüllen!
+        compressed: np.ndarray = np.array([out_r, out_g, out_b]) * 255
+        out = compressed.transpose().flatten()
+
+        # Bei Erweiterungen muss auch geschaut werden, ob mehr als 512 in out sind!!!
+        final = np.clip(np.append(out, np.zeros(512 - len(out))), 0, 255)
+
+        tup = tuple([x.item() for x in np.around(final).astype(int)])
+
+        if ON_ESP:
+            self.sender[1].dmx_data = tup
 
         self.prev_output = np.copy(output)
         self.current_frame += 1
@@ -286,6 +308,11 @@ class Program:
 
         if PLOT_OUTPUT:
             freqTimer.start(FREQ_TIME)  # 60 FPS für Output
+            if ON_ESP:
+                self.sender.start()
+                self.sender.activate_output(1)
+                self.sender[1].multicast = True
+                self.sender[1].destination = ESP_ADRESS
         else:
             timer.start(WAVE_TIME)  # 20 FPS für Waveform + Spectrum
 
