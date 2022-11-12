@@ -10,13 +10,13 @@ INPUT_PAH = "/home/felix/Musik/3.wav"
 FFT_BANDS = 1024
 
 
-def fft(plot: PlotItem, x: np.ndarray):
+def fft(to_plot: PlotItem, x: np.ndarray):
     fft_frame = ps.rfft(x, n=FFT_BANDS)
     power_frames = (fft_frame ** 2) / (FFT_BANDS / 2)
 
     # Liste mit N/2 Einträgen. Von 0Hz bis 20.000Hz (Max für Menschen)
     x = np.linspace(0, 20000, int(FFT_BANDS / 2))
-    plot.setData(x=x, y=power_frames)
+    to_plot.setData(x=x, y=power_frames)
 
 
 window = view.Window("Audio Visualizer")

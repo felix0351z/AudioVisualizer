@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.signal
 
 
 class FIRFilter:
@@ -25,3 +26,14 @@ class SimplePreEmphasis(FIRFilter):
         new_signal = new_signal / 2 ** 15
 
         return new_signal
+
+
+class NewSimplePreEmphasis(FIRFilter):
+
+    def filter(self, x: np.ndarray) -> np.ndarray:
+        a = -0.9
+
+        new_signal = scipy.signal.convolve(in1=x, in2=a)
+
+        max = np.max(np.abs(new_signal))
+        return new_signal / max
