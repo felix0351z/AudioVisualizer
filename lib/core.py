@@ -1,7 +1,7 @@
 import threading
 import scipy.io.wavfile as wav
 from PySide2 import QtCore
-from pydub import AudioSegment, playback
+import simpleaudio as sa
 
 
 from dsp import processing
@@ -38,6 +38,7 @@ class Program:
         self.plot = plot
 
         # Musik abspielen
+        #self._playback_task(self.filename).start()
         self._playback_task(self.filename).start()
 
         # Visualisierung starten
@@ -52,6 +53,8 @@ class Program:
         self.i += 1
 
     def _playback_task(self, filename):
-        audio = AudioSegment.from_wav(filename)
-        task = threading.Thread(target=playback.play, args=(audio,))
+        wave_obj = sa.WaveObject.from_wave_file(filename)
+        play_obj = wave_obj.play()
+        task = threading.Thread(target=play_obj.wait_done)
+
         return task
