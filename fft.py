@@ -6,7 +6,7 @@ from dsp import processing as ps
 
 # Führt die Fourier-Transformation durch und berechnet die Power-Frames
 
-INPUT_PAH = "/home/felix/Musik/3.wav"
+INPUT_PAH = "C:\\Users\\felix\\Music\\lavenders.wav"
 FFT_BANDS = 1024
 
 
