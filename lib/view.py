@@ -1,6 +1,8 @@
 from PySide2 import QtWidgets, QtGui
 import pyqtgraph as pg
 
+from lib.input import BufferThread
+
 
 class Window:
     """
@@ -96,10 +98,14 @@ class Window:
 
         return curves
 
-    def start(self):
+    def start(self, callback):
         """
         Fenster anzeigen und starten
         """
+
+        thread = BufferThread(callback)
+        thread.finished.connect(self.qtApp.exit)
+        thread.start()
 
         self.qtWindow.show()  # QT-Fenster anzeigen
         self.qtApp.exec_()  # QT-App starten
