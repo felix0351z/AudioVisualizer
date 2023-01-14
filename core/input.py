@@ -2,7 +2,7 @@ import pyaudio
 import numpy as np
 from PySide2.QtCore import QThread
 
-from lib import consts
+import consts
 
 
 class BufferThread(QThread):

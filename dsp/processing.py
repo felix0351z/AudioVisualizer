@@ -1,42 +1,30 @@
+from dataclasses import dataclass
+
 import numpy as np
 
 
-# Methoden für die digitale Audio-Verarbeitung
+@dataclass()
+class AudioInformation:
+    raw: np.ndarray
+    mel: np.ndarray
 
-def stereo_to_mono(data):
-    """
-    Konvertiert ein Stereo Signal in ein Mono-Signal
-    :param data: WavData als 2D List
-    :return: Mono WavData als 1D List
-    """
-    original_len = len(data)
-    # Zweite Spur hinter der ersten anordnen, und diese verwerfen
-    mono_data = np.reshape(data, -1, order='F')[:original_len]
-    return mono_data
+    def __init__(self, raw, mel):
+        self.raw = raw
+        self.mel = mel
 
 
-def samples_to_frames(data, frame_length: int, frane_step: int):
-    """
-    Kodiert die einzelnen Dirakstöße zu Frames zusammen
+class AudioAnalyser():
 
-    :param data: Signal in Waveform
-    :param frame_length: Länge des Frames in Hz
-    :param frane_step: Abstand zum nächsten Frame in Hz
-    :return:
-    """
+    def process(self, frame: np.ndarray) -> AudioInformation:
+        pass
 
-    # Anzahl der benötigten Frames | Letzter Frame wird abgezogen
-    amount_frames = int(np.ceil((len(data) - frame_length) / frane_step))
-    # Neue Länge der späteren Frame-Liste
-    new_len = int(round(amount_frames * frane_step + frame_length))
-    # Leere Stellen mit 0en füllen
-    new_data = np.append(data, np.zeros(new_len - len(data)))
+    def __process_fft(self) -> np.ndarray:
+        pass
 
-    # Fenster erzeugen
-    i = np.tile(np.arange(0, frame_length), (amount_frames, 1)) + \
-        np.tile(np.arange(0, amount_frames * frane_step, frane_step), (frame_length, 1)).T
-    frames = new_data[i.astype(np.int32, copy=False)]
-    return frames
+    def __process_mel(self) -> np.ndarray:
+        pass
+
+    # Methoden für die digitale Audio-Verarbeitung
 
 
 def rfft(frame, n=1024):
@@ -49,7 +37,7 @@ def rfft(frame, n=1024):
     """
     fft_frame = np.fft.rfft(frame, n)
     # Nur positive Signale
-    return np.absolute(fft_frame[:int(n/2)])
+    return np.absolute(fft_frame[:int(n / 2)])
 
 
 def get_formatted_frames(frame):
@@ -72,7 +60,7 @@ def get_power_frames(frame, N):
     :param frame: 1D Fourier Frame
     :return: 1D Power Frame
     """
-    pow_frame = ((1.0 / (N/2) * 2 + 1) * (frame ** 2))
+    pow_frame = ((1.0 / (N / 2) * 2 + 1) * (frame ** 2))
     return pow_frame
 
 
