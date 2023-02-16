@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Window {
+
+    ' Erstellen eines Fenster-Objektes
+    + Window(title: String) <<constructor>>
+
+    ' Erzeugt ein Fenster mit einem einzigen Graphen mit der Reichweite x_range und der Höhe y_range
+    ' Bei log=true wird der Graph auf der x-Achse logarithmisch dargestellt. ()Standardmäßig false)
+    + create_plot_item(title: String,   x_range: (int, int),  y_range: (int, int),  log: bool): PlotItem
+
+    ' Erzeugt ein Fenster mit mehreren farbigen Graphen mit der Reichweite x_range und y_range
+    ' Bei log=true wird der Graph auf der x-Achse logarithmisch dargestellt. (Standardmäßig false)
+    ' Die CurveItems werden in derselben Reihenfolge wie die übergebenen Pens zurückgegeben
+    + create_plot_item_curve(title: String, x_range: (int, int), y_range(int, int), pens: QtGui.Pen[], log: Boolean): PlotCurveItem[]
+
+    ' Erstellt ein "Stiftmarker"/Pen mit der Farbe (r, g, b, s) und einer Dicke (Standardmäßig width=2)
+    + create_pen(color: (int, int, int, int), width: int): QtGui.Pen
+
+    ' Startet das Fenster und den PyAudio-Thread
+    + start(callback: (raw: Float[]) -> fn)
+
+    - increase_window_size()
+
+}
+
+class BufferInputThread {
+    ' Ein Callback muss übergeben werden, welche die Eingangsdaten verarbeitet
+    + BufferInputThread(callback: (raw: Float[]) -> fn) <<constructor>>
+
+    ' Starten des Thread
+    + run()
+}
+
+Window -> BufferInputThread
+
+@enduml
