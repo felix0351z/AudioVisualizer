@@ -1,6 +1,6 @@
 import numpy as np
 
-from lib import view
+from core import view
 from dsp import filter, processing as ps
 
 # Führt die Fourier-Transformation durch und berechnet die Power-Frames

@@ -20,7 +20,7 @@ class SimplePreEmphasis(Filter):
         # Bei einem digitalen Signal sind laute Hoch-Signale oft viel kleiner als laute Tief-Signale
         # daher macht es Sinn, um auch bessere Ergebnisse bei der Fourier Transformation zu erzielen,
         # einen Vor-Filter auf das Signal zu legen, welches die Frequenzen normalisiert.
-        a = 0.8
+        a = 0.9
         new_signal = np.append(x[0], x[1:] - a * x[:-1])
 
         return new_signal
