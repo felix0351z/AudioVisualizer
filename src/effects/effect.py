@@ -1,4 +1,4 @@
-from dsp.processing import AudioInformation
+from src.dsp.processing import AudioInformation
 import numpy as np
 
 

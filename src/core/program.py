@@ -1,4 +1,4 @@
-from effects.effect import EffectInfo
+from src.effects.effect import EffectInfo
 
 
 class SingleProgram:

@@ -2,26 +2,46 @@ from dataclasses import dataclass
 
 import numpy as np
 
+import src.dsp.filter as filter
+
 
 @dataclass()
 class AudioInformation:
     raw: np.ndarray
     mel: np.ndarray
 
-    def __init__(self, raw, mel):
+    def __init__(self, raw: np.ndarray, mel: np.ndarray):
         self.raw = raw
         self.mel = mel
 
 
 class AudioAnalyser():
 
+    def __init__(self, frame_length: int):
+        self.filter_pre_emphasis = filter.SimplePreEmphasis()
+
+        self.last_frame = np.empty(frame_length)
+        self._frame = np.empty(frame_length)
+
+        self.fft = None
+        self.power = None
+
     def process(self, frame: np.ndarray) -> AudioInformation:
+        emphasized_frame = self.filter_pre_emphasis.filter(frame)
+
+        self._frame = np.append(self.last_frame + emphasized_frame)
+        self._process_fft()
+
+        self.last_frame = emphasized_frame
+
+    def _process_fft(self):
+        n = 1024
+        self.fft = np.absolute(np.fft.rfft(self._frame), n)
+        self.power = self.fft**2
+
         pass
 
-    def __process_fft(self) -> np.ndarray:
-        pass
-
-    def __process_mel(self) -> np.ndarray:
+    def _process_mel(self):
         pass
 
     # Methoden für die digitale Audio-Verarbeitung

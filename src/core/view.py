@@ -1,7 +1,7 @@
 from PySide2 import QtWidgets, QtGui
 import pyqtgraph as pg
 
-from core.input import BufferThread
+from src.core.input import BufferThread
 
 
 class Window:
