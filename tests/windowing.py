@@ -28,9 +28,10 @@ class WindowTest:
         signal = pre_emphasis.filter(raw)  # Take the emphasized input signal
 
         moving_signal = np.append(self.last_frame, signal)  # Create a moving signal, because of the data leakage with the window
+        windowed = moving_signal*np.hanning(len(moving_signal))
 
         none_fft = np.abs(np.fft.rfft(signal)) ** 2  # Apply the fourier transform without a window
-        hanning_fft = np.abs(np.fft.rfft(moving_signal)) ** 2  # Apply a fourier transform with a window on the moving signal
+        hanning_fft = np.abs(np.fft.rfft(windowed)) ** 2  # Apply a fourier transform with a window on the moving signal
 
         def x_axis(n): np.linspace(0, 20000, len(n))  # Create the x-axis for visualization
 
