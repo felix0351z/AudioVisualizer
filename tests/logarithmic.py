@@ -38,6 +38,7 @@ class Smoothing:
         y_range = (0, 1)
 
         self.mel_plot = window.create_plot_item("Melbank", x_range, y_range, log=True)
+        self.melbank = utils.Melbank(mel_bins, minimum_frequency, maximum_frequency)
 
         self.smoothed1 = window.create_pen(color=(255, 0, 0, 200), width=1.5)
         self.smoothed2 = window.create_pen(color=(0, 255, 0, 200), width=1.5)
@@ -48,7 +49,8 @@ class Smoothing:
         window.start(self.run)
 
     def run(self, raw: np.ndarray):
-        mel_spectrum = utils.raw_to_mel_signal(mel_bins, raw, minimum_frequency, maximum_frequency)
+        mel_spectrum = self.melbank.raw_to_mel_signal(raw)
+
         log_spectrum = 10 * np.log10(mel_spectrum + 1)
 
         gain_normalization_filter.update(np.max(mel_spectrum))

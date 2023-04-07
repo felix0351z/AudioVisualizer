@@ -33,6 +33,7 @@ class GainNormalization:
         y_range = (0, 1)
 
         self.mel_plot = window.create_plot_item("Melbank", x_range, y_range, log=True)
+        self.melbank = utils.Melbank(mel_bins, minimum_frequency, maximum_frequency)
 
         self.gain1 = window.create_pen(color=(255, 0, 0, 200), width=1.5)
         self.gain2 = window.create_pen(color=(0, 255, 0, 200), width=1.5)
@@ -44,7 +45,7 @@ class GainNormalization:
         window.start(self.run)
 
     def run(self, raw: np.ndarray):
-        mel_spectrum = utils.raw_to_mel_signal(mel_bins, raw, minimum_frequency, maximum_frequency)
+        mel_spectrum = self.melbank.raw_to_mel_signal(raw)
 
         max = np.max(mel_spectrum)
         max_gaus = np.max(gaussian_filter1d(mel_spectrum, sigma=1.0))

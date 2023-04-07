@@ -1,41 +1,57 @@
 import sacn
 import numpy as np
 
-from src.dsp.filter import SimplePreEmphasis
+from src.dsp.filter import SimplePreEmphasis, FilterUtils
 from src.dsp import melbank
 import consts
 
 pre_emphasis_filter = SimplePreEmphasis()
 
 
-def raw_to_mel_signal(bins: int, raw: np.ndarray, minimum_frequency: int, maximum_frequency: int) -> np.ndarray:
-    """
-    Takes a raw signal and calculates the complete melbank of it
-    :param bins: Amount of bins in the final signal
-    :param raw: The raw input signal
-    :param minimum_frequency: The minimum frequency of the melbank
-    :param maximum_frequency: The maximum frequency of the melbank
-    :return: The filtered signal
-    """
+class Melbank:
 
-    filtered = pre_emphasis_filter.filter(raw)  # Take the emphasized input signal
+    def __init__(self, bins: int, minimum_frequency: int, maximum_frequency: int):
+        self.bins = bins
+        self.min_frequency = minimum_frequency
+        self.max_frequency = maximum_frequency
+        self.last_frame = None
 
-    fft_frame = np.abs(np.fft.rfft(filtered))
-    power_frames = (fft_frame ** 2)
+    def raw_to_mel_signal(self, raw: np.ndarray, threshold_filter: bool = True) -> np.ndarray:
+        """
+        Takes a raw signal and calculates the complete melbank of it
+        :param threshold_filter: If True, the theshold filder is enabled
+        :param raw: The raw input signal
+        :return: The filtered signal
+        """
+        if self.last_frame is None:
+            self.last_frame = np.tile(0, len(raw))
 
-    mel_matrix = melbank.compute_melmatrix(  # Create a mel matrix with the given configurations
-        num_mel_bands=bins,
-        freq_min=minimum_frequency,
-        freq_max=maximum_frequency,
-        num_fft_bands=int(len(filtered) / 2 + 1),
-        sample_rate=consts.SAMPLE_RATE
-    )
+        filtered = pre_emphasis_filter.filter(raw)  # Take the emphasized input signal
+        if threshold_filter:
+            filtered = FilterUtils.auditory_threshold_filter(signal=filtered)
 
-    # Multiplication of the mel matrix with power frame to a new matrix, which contains multiple band passed versions of the original power frame
-    mel_frames = np.atleast_2d(power_frames * mel_matrix)
-    # Sum the different band passed versions up to create a one dimensional frame
-    mel_spectrum = np.sum(mel_frames, axis=1)
-    return mel_spectrum
+        moving_signal = np.append(self.last_frame,
+                                  filtered)  # Create a moving signal, because of the data leakage with the window
+        windowed = moving_signal * np.hanning(len(moving_signal))
+
+        fft_frame = np.abs(np.fft.rfft(windowed))
+        power_frames = (fft_frame ** 2)
+
+        mel_matrix = melbank.compute_melmatrix(  # Create a mel matrix with the given configurations
+            num_mel_bands=self.bins,
+            freq_min=self.min_frequency,
+            freq_max=self.max_frequency,
+            num_fft_bands=int(len(fft_frame)),
+            sample_rate=consts.SAMPLE_RATE
+        )
+
+        # Multiplication of the mel matrix with power frame to a new matrix, which contains multiple band passed versions of the original power frame
+        mel_frames = np.atleast_2d(power_frames * mel_matrix)
+        # Sum the different band passed versions up to create a one dimensional frame
+        mel_spectrum = np.sum(mel_frames, axis=1)
+
+        self.last_frame = filtered
+        return mel_spectrum
 
 
 class TestSender:

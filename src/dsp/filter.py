@@ -24,3 +24,17 @@ class SimplePreEmphasis(Filter):
         new_signal = np.append(x[0], x[1:] - a * x[:-1])
 
         return new_signal
+
+
+class FilterUtils:
+    AUDITORY_THRESHOLD_VALUE = 2e-4
+
+    @staticmethod
+    def auditory_threshold_filter(signal: np.ndarray):
+        print(f"Value is {np.max(signal)}")
+        #return np.where(signal > FilterUtils.AUDITORY_THRESHOLD_VALUE, signal, 0)
+
+        if np.max(signal) <= FilterUtils.AUDITORY_THRESHOLD_VALUE:
+            return np.tile(0, len(signal))
+
+        return signal
