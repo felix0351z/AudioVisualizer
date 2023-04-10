@@ -1,15 +1,14 @@
 import numpy as np
-import src.utils.view as view
+
+from src.utils import view
 from src.dsp import filter
 import consts
+
 
 # This test will analyse the influence and the importance
 # of a window over the signal.
 # One Graph will show the fourier transform without a window,
 # and the second screen wil show a signal with a window placed on the original signal
-
-pre_emphasis = filter.SimplePreEmphasis()  # Reduce the amount low frequencies for a better representation
-
 
 class WindowTest:
 
@@ -25,10 +24,11 @@ class WindowTest:
         window.start(self.test)
 
     def test(self, raw: np.ndarray):
-        signal = pre_emphasis.filter(raw)  # Take the emphasized input signal
+        signal = filter.pre_emphasis(raw)  # Take the emphasized input signal
 
-        moving_signal = np.append(self.last_frame, signal)  # Create a moving signal, because of the data leakage with the window
-        windowed = moving_signal*np.hanning(len(moving_signal))
+        moving_signal = np.append(self.last_frame,
+                                  signal)  # Create a moving signal, because of the data leakage with the window
+        windowed = moving_signal * np.hanning(len(moving_signal))
 
         none_fft = np.abs(np.fft.rfft(signal)) ** 2  # Apply the fourier transform without a window
         hanning_fft = np.abs(np.fft.rfft(windowed)) ** 2  # Apply a fourier transform with a window on the moving signal

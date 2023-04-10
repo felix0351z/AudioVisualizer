@@ -11,8 +11,6 @@ mel_bins = 60  # Number of mel bins
 minimum_frequency = 20  # Minimum frequency, which will be measured by the filterbank
 maximum_frequency = 12000  # Maximum frequency, which will be measured by the filterbank
 
-pre_emphasis_filter = filter.SimplePreEmphasis()  # Reduce the amount low frequencies for a better representation
-
 
 class MelbankTest:
 
@@ -28,7 +26,7 @@ class MelbankTest:
         window.start(self.run)
 
     def run(self, raw: np.ndarray):
-        filtered = pre_emphasis_filter.filter(raw)  # Take the emphasized input signal
+        filtered = filter.pre_emphasis(raw)  # Take the emphasized input signal
 
         fft_frame = np.abs(np.fft.rfft(filtered))
         power_frames = (fft_frame ** 2)

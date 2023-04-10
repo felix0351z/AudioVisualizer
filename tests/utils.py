@@ -1,11 +1,8 @@
 import sacn
 import numpy as np
 
-from src.dsp.filter import SimplePreEmphasis, FilterUtils
-from src.dsp import melbank
 import consts
-
-pre_emphasis_filter = SimplePreEmphasis()
+from src.dsp import melbank, filter
 
 
 class Melbank:
@@ -26,9 +23,9 @@ class Melbank:
         if self.last_frame is None:
             self.last_frame = np.tile(0, len(raw))
 
-        filtered = pre_emphasis_filter.filter(raw)  # Take the emphasized input signal
+        filtered = filter.pre_emphasis(raw)  # Take the emphasized input signal
         if threshold_filter:
-            filtered = FilterUtils.auditory_threshold_filter(signal=filtered)
+            filtered = filter.auditory_threshold_filter(signal=filtered)
 
         moving_signal = np.append(self.last_frame,
                                   filtered)  # Create a moving signal, because of the data leakage with the window

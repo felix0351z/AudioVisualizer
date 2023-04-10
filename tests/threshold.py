@@ -2,7 +2,6 @@ import numpy as np
 
 import utils
 from src.dsp import exponential_smoothing
-from src.dsp import filter
 from src.utils import view
 
 # This test is based on the gain normalization test and goes a step further and tries to apply a smoothing transition over time
@@ -11,20 +10,20 @@ mel_bins = 60  # Number of mel bins
 minimum_frequency = 20  # Minimum frequency, which will be measured by the filterbank
 maximum_frequency = 1200  # Maximum frequency, which will be measured by the filterbank
 
-
 x_axis = np.linspace(1, mel_bins + 1, mel_bins)
 
 gain_normalization_filter = exponential_smoothing.SingleExponentialFilter(start_value=0.1, alpha_rise=0.99,
                                                                           alpha_decay=0.1)
 gain_normalization_threshold = exponential_smoothing.SingleExponentialFilter(start_value=0.1, alpha_rise=0.99,
-                                                                          alpha_decay=0.1)
+                                                                             alpha_decay=0.1)
 
 # If the smoothing factor of the decay is lower, the decay will need more time to come back to the bottom.
 # The result should be a better transition over time.
 mel_smoothing = exponential_smoothing.DimensionalExponentialFilter(start_value=np.tile(0.1, mel_bins), alpha_rise=0.99,
                                                                    alpha_decay=0.2)
-mel_smoothing_filtered = exponential_smoothing.DimensionalExponentialFilter(start_value=np.tile(0.1, mel_bins), alpha_rise=0.99,
-                                                                   alpha_decay=0.2)
+mel_smoothing_filtered = exponential_smoothing.DimensionalExponentialFilter(start_value=np.tile(0.1, mel_bins),
+                                                                            alpha_rise=0.99,
+                                                                            alpha_decay=0.2)
 
 
 class ThresholdTest:

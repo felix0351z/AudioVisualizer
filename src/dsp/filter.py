@@ -1,40 +1,27 @@
 import numpy as np
 
-
-class Filter:
-
-    def filter(self, x: np.ndarray) -> np.ndarray:
-        pass
+PRE_EMPHASIS_CONST = 0.9
+AUDITORY_THRESHOLD_VALUE = 2e-4
 
 
-class SimplePreEmphasis(Filter):
-
-    def filter(self, x: np.ndarray) -> np.ndarray:
-        """
-        Legt einen Pre-Emphasis Filter auf das Signal
-        y(t) = x(t) - ax(t-1)
-        :param x: 2D Audio Signal
-        :return: Verarbeitetes 2D Audio Signal
-        """
-
-        # Bei einem digitalen Signal sind laute Hoch-Signale oft viel kleiner als laute Tief-Signale
-        # daher macht es Sinn, um auch bessere Ergebnisse bei der Fourier Transformation zu erzielen,
-        # einen Vor-Filter auf das Signal zu legen, welches die Frequenzen normalisiert.
-        a = 0.9
-        new_signal = np.append(x[0], x[1:] - a * x[:-1])
-
-        return new_signal
+def pre_emphasis(x: np.ndarray):
+    # y(t) = x(t) - ax(t-1)
+    return np.append(x[0], x[1:] - PRE_EMPHASIS_CONST * x[:-1])
 
 
-class FilterUtils:
-    AUDITORY_THRESHOLD_VALUE = 2e-4
+def auditory_threshold_filter(signal: np.ndarray):
+    print(f"Value is {np.max(signal)}")
 
-    @staticmethod
-    def auditory_threshold_filter(signal: np.ndarray):
-        print(f"Value is {np.max(signal)}")
-        #return np.where(signal > FilterUtils.AUDITORY_THRESHOLD_VALUE, signal, 0)
+    if np.max(signal) <= AUDITORY_THRESHOLD_VALUE:
+        return np.tile(0, len(signal))
 
-        if np.max(signal) <= FilterUtils.AUDITORY_THRESHOLD_VALUE:
-            return np.tile(0, len(signal))
+    return signal
 
-        return signal
+
+def point_wise_auditory_threshold_filter(signal: np.ndarray):
+    return np.where(
+        signal > AUDITORY_THRESHOLD_VALUE,
+        # Condition, if a value is over the threshold -> then A, else B
+        signal,  # A, the value will be passed
+        0  # B, the value will be set to zero
+    )

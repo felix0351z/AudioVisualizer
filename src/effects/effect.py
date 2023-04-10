@@ -1,16 +1,29 @@
-from src.dsp.processing import AudioInformation
+import abc
 import numpy as np
+from dataclasses import dataclass
 
 
-class EffectInfo:
+@dataclass
+class EffectDescription:
     name: str
     description: str
+    # config
 
 
 class AudioEffect:
+    NAME = ""
+    DESCRIPTION = ""
 
-    def info(self) -> EffectInfo:
+    @abc.abstractmethod
+    def start(self, n_led: int):
         pass
 
-    def process(self, data: AudioInformation) -> np.ndarray:
+    @abc.abstractmethod
+    def visualize(self, raw: np.ndarray) -> np.ndarray:
         pass
+
+    def description(self) -> EffectDescription:
+        return EffectDescription(
+            self.NAME,
+            self.DESCRIPTION
+        )

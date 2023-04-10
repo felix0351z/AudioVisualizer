@@ -1,14 +1,11 @@
 import numpy as np
-from src.utils import view
 
-from src.dsp.filter import SimplePreEmphasis
+from src.utils import view
+from src.dsp import filter
 
 # This test calculates the fourier transform of the input signal and calculates the power spectrum
 # The top graph shows the classic magnitude of the fourier transform while the lower graph
 # shows the power spectrum
-
-
-pre_emphasis_filter = SimplePreEmphasis()  # Reduce the amount low frequencies for a better representation
 
 
 class FftTest:
@@ -24,7 +21,7 @@ class FftTest:
         window.start(self.fft)
 
     def fft(self, raw: np.ndarray):
-        filtered = pre_emphasis_filter.filter(raw)  # Take the emphasized input signal
+        filtered = filter.pre_emphasis(raw)  # Take the emphasized input signal
 
         fft_frame = np.abs(np.fft.rfft(filtered))
         power_frame = (fft_frame ** 2)
