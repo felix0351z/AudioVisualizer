@@ -1,6 +1,6 @@
 import numpy as np
 
-import consts
+from src.core.input import BufferThread
 from src.dsp import melbank, filter, exponential_smoothing as exp
 from src.effects.effect import AudioEffect
 
@@ -35,7 +35,7 @@ class MelbankEffect(AudioEffect):
             freq_min=min_frequency,
             freq_max=max_frequency,
             num_fft_bands=len(power_spectrum),
-            sample_rate=consts.SAMPLE_RATE
+            sample_rate=BufferThread.SAMPLE_RATE
         )
 
         # Multiplication of the mel matrix with power frame to a new matrix, which contains multiple band passed versions of the original power frame

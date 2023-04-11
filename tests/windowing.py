@@ -2,8 +2,6 @@ import numpy as np
 
 from src.utils import view
 from src.dsp import filter
-import consts
-
 
 # This test will analyse the influence and the importance
 # of a window over the signal.
@@ -13,7 +11,6 @@ import consts
 class WindowTest:
 
     def __init__(self):
-        self.last_frame = np.empty(consts.FRAMES_PER_BUFFER)  # Fill the nullable last frame with empty zeros
 
         window = view.Window("Windowing Test")
         x_range = (1, 10 ** 5)
@@ -25,6 +22,9 @@ class WindowTest:
 
     def test(self, raw: np.ndarray):
         signal = filter.pre_emphasis(raw)  # Take the emphasized input signal
+
+        if self.last_frame is None:
+            self.last_frame = np.tile(0.0, len(raw))  # Fill the nullable last frame with empty zeros
 
         moving_signal = np.append(self.last_frame,
                                   signal)  # Create a moving signal, because of the data leakage with the window

@@ -2,31 +2,38 @@ import pyaudio
 import numpy as np
 from PySide2.QtCore import QThread
 
-import consts
-
 
 class BufferThread(QThread):
+    SAMPLE_RATE = 48000
+    CHANNELS = 1
+    FPS = 50
 
     def __init__(self, callback):
         super().__init__()
         self.callback = callback
+        self.frames_per_buffer = int(self.SAMPLE_RATE/self.FPS)
 
     def run(self):
+        """
+        Open an audio stream with Pyaudio and start
+        a playback to the callback function
+        """
+
         pa = pyaudio.PyAudio()
         stream = pa.open(
             format=pyaudio.paFloat32,
-            rate=consts.SAMPLE_RATE,
-            channels=consts.CHANNELS,
+            rate=self.SAMPLE_RATE,
+            channels=self.CHANNELS,
             input=True,
-            frames_per_buffer=consts.FRAMES_PER_BUFFER
+            frames_per_buffer=self.frames_per_buffer
         )
 
-        # Anzahl der Overflows
         overflows = 0
 
         while True:
             try:
-                y = np.frombuffer(stream.read(consts.FRAMES_PER_BUFFER, exception_on_overflow=False), dtype=np.float32)
+                # Read the data from the pyaudio stream
+                y = np.frombuffer(stream.read(self.frames_per_buffer, exception_on_overflow=False), dtype=np.float32)
                 stream.read(stream.get_read_available(), exception_on_overflow=False)
                 self.callback(y)
 

@@ -1,7 +1,7 @@
 import sacn
 import numpy as np
 
-import consts
+from src.core.input import BufferThread
 from src.dsp import melbank, filter
 
 
@@ -39,7 +39,7 @@ class Melbank:
             freq_min=self.min_frequency,
             freq_max=self.max_frequency,
             num_fft_bands=int(len(fft_frame)),
-            sample_rate=consts.SAMPLE_RATE
+            sample_rate=BufferThread.SAMPLE_RATE
         )
 
         # Multiplication of the mel matrix with power frame to a new matrix, which contains multiple band passed versions of the original power frame

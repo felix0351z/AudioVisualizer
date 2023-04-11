@@ -20,8 +20,8 @@ class SingleProgram:
         self.current_effect: Optional[AudioEffect] = None
         self.callback = callback
 
-        self.worker = input.BufferThread(self.process)
-        self.sender = sender.SacnSender()
+        self.worker = input.BufferThread(self.process)  # Create a worker thread
+        self.sender = sender.SacnSender()  # Create and start the sender
 
     def get_effects(self) -> [EffectInformation]:
         descriptions = []
