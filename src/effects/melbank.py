@@ -45,9 +45,7 @@ class MelbankEffect(AudioEffect):
         mel_frame = np.sum(mel_frames, axis=1)
 
         if threshold_filter:
-            print(f"Value is {np.max(mel_frame)}")
             self.mel_frame = filter.auditory_threshold_filter(mel_frame)
-            print(f"After is {np.max(self.mel_frame)}")
 
         if pre_normalization:
             self._normalize_gain()
