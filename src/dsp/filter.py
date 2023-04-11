@@ -10,10 +10,8 @@ def pre_emphasis(x: np.ndarray):
 
 
 def auditory_threshold_filter(signal: np.ndarray):
-    print(f"Value is {np.max(signal)}")
-
     if np.max(signal) <= AUDITORY_THRESHOLD_VALUE:
-        return np.tile(0, len(signal))
+        return np.tile(0.0, len(signal))
 
     return signal
 

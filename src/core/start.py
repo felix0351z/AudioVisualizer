@@ -7,3 +7,4 @@ def callback(raw):
 
 program = SingleProgram(callback)
 print(program.get_effects())
+program.start()

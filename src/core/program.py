@@ -4,14 +4,14 @@ from typing import Optional
 import input
 import sender
 
-from src.effects.effect import AudioEffect, EffectDescription
+from src.effects.effect import AudioEffect, EffectInformation
 from src.effects.melbank import MelbankEffect
 from src.effects.spectrum import SpectrumEffect
 
 
 class SingleProgram:
     EFFECTS: list[AudioEffect] = [
-        MelbankEffect(), SpectrumEffect()
+        SpectrumEffect(), MelbankEffect()
     ]
 
     # sender, effekte, farben, (view, input)
@@ -23,17 +23,14 @@ class SingleProgram:
         self.worker = input.BufferThread(self.process)
         self.sender = sender.SacnSender()
 
-    def __del__(self):
-        pass
-
-    def get_effects(self) -> [EffectDescription]:
+    def get_effects(self) -> [EffectInformation]:
         descriptions = []
         for effect in self.EFFECTS:
             descriptions.append(effect.description())
 
         return descriptions
 
-    def get_selected_effect(self) -> EffectDescription:
+    def get_selected_effect(self) -> EffectInformation:
         return self.current_effect.description()
 
     def set_effect(self, position: int):
@@ -42,16 +39,16 @@ class SingleProgram:
         except IndexError:
             print(f"Effect at index {position} not found!")
 
-        self.current_effect.start()
+        self.current_effect.start(60)
 
     def start(self):
+        self.set_effect(0)
         self.worker.start()
-        pass
 
     def pause(self):
         pass
 
     def process(self, raw: np.ndarray):
-        signal = self.current_effect.visualize(raw)
+        signal = self.current_effect.run(raw)
         self.sender.send_signal(signal)
         self.callback(signal)
