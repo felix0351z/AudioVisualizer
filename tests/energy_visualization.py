@@ -6,14 +6,12 @@ import utils
 
 # This is a test to try a direct energy visualization
 
-LED_BINS = 60
+normalize_gain = True
 
-gain_normalization_filter = exponential_smoothing.SingleExponentialFilter(start_value=0.1,
-                                                                          alpha_rise=0.99, alpha_decay=0.001)
+average_filter = exponential_smoothing.SingleExponentialFilter(start_value=0.1,
+                                                               alpha_rise=0.1, alpha_decay=0.3)
 
-time_smooth_filter = exponential_smoothing.SingleExponentialFilter(start_value=0.1,
-                                                                   alpha_rise=0.8, alpha_decay=0.3)
-x_axis = np.linspace(1, LED_BINS + 1, LED_BINS)
+gain_normalization = exponential_smoothing.SingleExponentialFilter(start_value=0.1, alpha_rise=0.9, alpha_decay=0.001)
 
 
 class EnergyTest:
@@ -21,30 +19,52 @@ class EnergyTest:
     def __init__(self):
         window = view.Window("Energy visualization")
 
-        x_range = (1, LED_BINS)
-        y_range = (0, 1)
+        x_range = (1, 400)
+        y_range = (0, 10)
 
-        self.plot = window.create_plot_item("Energy", x_range, y_range)
+        pen1 = window.create_pen(color=(255, 0, 0), width=1)
+        pen2 = window.create_pen(color=(0, 255, 0), width=1)
+        pen3 = window.create_pen(color=(255, 255, 0), width=1)
+        self.plots = window.create_plot_curve_item("Bass frequencies", x_range, y_range, [pen1, pen2, pen3])
         self.sender = utils.TestSender()
+        self.melbank = utils.Melbank(bins=60, minimum_frequency=0, maximum_frequency=200)
+
+        self.values = np.tile(0, 400)
+        self.averages = np.tile(0, 400)
+        self.difference = np.tile(0, 400)
 
         window.start(self.run)
 
     def run(self, raw: np.ndarray):
-        energy_value = np.sum(raw ** 2)
+        mel = self.melbank.raw_to_mel_signal(raw)
+        sum = float(np.max(mel))
 
-        gain_normalization_filter.update(energy_value)
-        gain_normalized = energy_value / gain_normalization_filter.forcast
+        self.values = np.delete(self.values, [0])  # Delete last value
+        self.averages = np.delete(self.averages, [0])
+        self.difference = np.delete(self.difference, [0])
 
-        smoothed = time_smooth_filter.update(gain_normalized)
+        self.values = np.append(self.values, sum)  # Add new element
+        average = average_filter.update(sum)  # Generate smoothed graph
+        self.averages = np.append(self.averages, average)
 
-        # effect = scipy.signal.windows.gaussian(LED_BINS, std=10, sym=True)*smoothed
-        effect = np.tile(smoothed, LED_BINS)
+        # If the difference between the original  1.5 times bigger than the smoothed, it's a peak
+        con = 1.5
+        value = 0.0
+        if sum > average * con:
+            value = sum
 
-        self.plot.setData(x=x_axis, y=effect)
+        if normalize_gain:
+            value /= gain_normalization.update(value)
 
-        self.sender.send_signal(effect)
+        self.difference = np.append(self.difference, value)
 
-        pass
+
+        length = len(self.values)
+        axis = np.linspace(1, length + 1, length)
+        self.plots[0].setData(x=axis, y=self.values)
+        self.plots[1].setData(x=axis, y=self.averages)
+        self.plots[2].setData(x=axis, y=self.difference)
+        # self.sender.send_signal(mel)
 
 
 EnergyTest()
