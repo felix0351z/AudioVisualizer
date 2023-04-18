@@ -8,15 +8,23 @@ from src.effects.effect import AudioEffect, EffectInformation
 from src.effects.melbank import MelbankEffect
 from src.effects.spectrum import SpectrumEffect
 
+from src.colors.effect import ColorEffect
+from src.colors.single import SingleColor
+
 
 class SingleProgram:
     EFFECTS: list[AudioEffect] = [
         SpectrumEffect(), MelbankEffect()
     ]
 
+    COLORS: list[ColorEffect] = [
+        SingleColor()
+    ]
+
     # sender, effekte, farben, (view, input)
 
     def __init__(self, callback):
+        self.current_color: Optional[ColorEffect] = None
         self.current_effect: Optional[AudioEffect] = None
         self.callback = callback
 
@@ -41,8 +49,16 @@ class SingleProgram:
 
         self.current_effect.start(60)
 
+    def set_color(self, position: int):
+        try:
+            self.current_color = self.COLORS[position]
+        except IndexError:
+            print(f"Color-Effect at index {position} not found!")
+
     def start(self):
         self.set_effect(0)
+        self.set_color(0)
+
         self.worker.start()
 
     def pause(self):
@@ -50,5 +66,5 @@ class SingleProgram:
 
     def process(self, raw: np.ndarray):
         signal = self.current_effect.run(raw)
-        self.sender.send_signal(signal)
+        self.sender.send(self.current_color.visualize(signal))
         self.callback(signal)

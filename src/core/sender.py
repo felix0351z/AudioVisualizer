@@ -21,14 +21,14 @@ class SacnSender:
         transposed = np.transpose(
             normalization_for_led).flatten()  # In the dmx package the rgb values are directly behind each other, so the signal needs to be transposed
 
-        self._send(transposed)
+        self.send(transposed)
 
     def send_color_signal(self, r_signal: np.ndarray, g_signal: np.ndarray, b_signal: np.ndarray):
         transposed = np.transpose(r_signal, g_signal,
                                   b_signal)  # In the dmx package the rgb values are directly behind each other, so the signal needs to be transposed
-        self._send(transposed)
+        self.send(transposed)
 
-    def _send(self, transposed_signal: np.ndarray):
+    def send(self, transposed_signal: np.ndarray):
         # Apply nulls at the end of the signal, because every dmx pacakge needs 512 entries
         to_send = np.clip(np.append(transposed_signal, np.zeros(512 - len(transposed_signal))), 0, 255)
 
