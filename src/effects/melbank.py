@@ -82,3 +82,9 @@ class MelbankEffect(AudioEffect):
 
     def visualize(self) -> np.ndarray:
         return self.melbank_frame()
+
+    def start(self):
+        pass
+
+    def update(self):
+        pass

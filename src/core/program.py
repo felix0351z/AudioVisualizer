@@ -44,14 +44,14 @@ class SingleProgram:
     def set_effect(self, position: int):
         try:
             self.current_effect = self.EFFECTS[position]
+            self.current_effect.activate(60)
         except IndexError:
             print(f"Effect at index {position} not found!")
-
-        self.current_effect.start(60)
 
     def set_color(self, position: int):
         try:
             self.current_color = self.COLORS[position]
+            self.current_color.start()
         except IndexError:
             print(f"Color-Effect at index {position} not found!")
 
@@ -65,6 +65,12 @@ class SingleProgram:
         pass
 
     def process(self, raw: np.ndarray):
+        # Process the effect
         signal = self.current_effect.run(raw)
-        self.sender.send(self.current_color.visualize(signal))
+
+        # If the effect doesn't have a color render function, use the standard color animations instead
+        if not self.current_effect.use_color_render:
+            signal = self.current_color.visualize(signal)
+
+        self.sender.send(signal)
         self.callback(signal)

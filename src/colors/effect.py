@@ -11,19 +11,14 @@ class ColorEffect:
     NAME = ""
     DESCRIPTION = ""
 
-    def __init__(self):
-        self.__n_led = None
-    
-    def start(self, n_led: int):
-        self.__n_led = n_led
+    @abc.abstractmethod
+    def start(self):
         pass
 
+    @abc.abstractmethod
     def update(self, config):
         pass
 
     @abc.abstractmethod
     def visualize(self, signal: np.ndarray) -> np.ndarray:
         pass
-
-    def amount_leds(self) -> int:
-        return self.__n_led
