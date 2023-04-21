@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Optional
 
-import input
+from input import BufferThread
 import sender
 
 from src.effects.effect import AudioEffect, EffectInformation
@@ -15,7 +15,7 @@ from src.colors.single import SingleColor
 
 class SingleProgram:
     EFFECTS: list[AudioEffect] = [
-        EnergyEffect(), SpectrumEffect(), MelbankEffect()
+        SpectrumEffect(), EnergyEffect(), MelbankEffect()
     ]
 
     COLORS: list[ColorEffect] = [
@@ -29,7 +29,7 @@ class SingleProgram:
         self.current_effect: Optional[AudioEffect] = None
         self.callback = callback
 
-        self.worker = input.BufferThread(self.process)  # Create a worker thread
+        self.worker = BufferThread(self.process)  # Create a worker thread
         self.sender = sender.SacnSender()  # Create and start the sender
 
     def get_effects(self) -> [EffectInformation]:
@@ -45,7 +45,7 @@ class SingleProgram:
     def set_effect(self, position: int):
         try:
             self.current_effect = self.EFFECTS[position]
-            self.current_effect.activate(60)
+            self.current_effect.activate(n_led=60, sample_rate=BufferThread.SAMPLE_RATE)
         except IndexError:
             print(f"Effect at index {position} not found!")
 

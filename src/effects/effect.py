@@ -38,18 +38,19 @@ class AudioEffect:
         """
         pass
 
-    def activate(self, n_led: int):
+    def activate(self, n_led: int, sample_rate: int):
         """
         Will be executed if the effect will be selected as current effect.
+        :param sample_rate:
         :param n_led: The amount of led pixels
         """
         self._amount_leds = n_led
+        self._sample_rate = sample_rate
         self._last_frame = None
         self._moving_signal = None
 
         self.use_color_render = isinstance(self, ColorRender)
         self.start()
-        print(f"Effect with the class name {__name__} loaded!")
 
     def description(self) -> EffectInformation:
         return EffectInformation(
@@ -75,6 +76,9 @@ class AudioEffect:
             return self.visualize_rgb()
 
         return self.visualize()
+
+    def sample_rate(self):
+        return self._sample_rate
 
     def amount_leds(self) -> int:
         return self._amount_leds
