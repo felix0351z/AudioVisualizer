@@ -96,6 +96,11 @@ class AudioEffect:
         windowed = filtered * np.hanning(len(filtered))
         return np.abs(np.fft.rfft(windowed)) ** 2
 
+    def rms(self) -> float:
+
+        energy = np.sum(self._moving_signal**2)
+        return np.sqrt((energy/len(self._moving_signal)))
+
 
 class ColorRender:
 
