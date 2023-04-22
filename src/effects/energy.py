@@ -7,7 +7,7 @@ from src.effects.effect import AudioEffect
 
 class EnergyEffect(AudioEffect):
     NAME = "Energy"
-    DESCRIPTION = ""
+    DESCRIPTION = "Displays the energy of the musical as an gaussian curve"
 
     GAIN_RISE = 0.9
     GAIN_DECAY = 0.001
@@ -22,7 +22,7 @@ class EnergyEffect(AudioEffect):
         self.smoothing_filter = SingleExponentialFilter(start_value=0.1, alpha_rise=self.SMOOTHING_RISE,
                                                         alpha_decay=self.SMOOTHING_DECAY)
 
-    def update(self):
+    def update(self, config):
         pass
 
     def smoothed_rms(self) -> float:

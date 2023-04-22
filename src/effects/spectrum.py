@@ -6,7 +6,7 @@ from src.dsp.melbank import Melbank
 
 class SpectrumEffect(MelbankEffect):
     NAME = "Spectrum"
-    DESCRIPTION = ""
+    DESCRIPTION = "Displays the current spectrum symmetrical"
 
     MIN_FREQ = 20
     MAX_FREQ = 12000
@@ -21,7 +21,7 @@ class SpectrumEffect(MelbankEffect):
             smoothing=super().SMOOTHING,
         )
 
-    def update(self):
+    def update(self, config):
         pass
 
     def visualize(self) -> np.ndarray:

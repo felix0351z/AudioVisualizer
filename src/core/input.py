@@ -3,7 +3,11 @@ import numpy as np
 from PySide2.QtCore import QThread
 
 
-class BufferThread(QThread):
+class InputStreamThread(QThread):
+    """
+    Create new input stream
+    """
+
     SAMPLE_RATE = 48000
     CHANNELS = 1
     FPS = 50
@@ -15,7 +19,7 @@ class BufferThread(QThread):
 
     def run(self):
         """
-        Open an audio stream with Pyaudio and start
+        Open an audio stream with pyaudio and start
         a playback to the callback function
         """
 

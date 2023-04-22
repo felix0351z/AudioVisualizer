@@ -6,24 +6,18 @@ from src.dsp import filter
 
 class Melbank:
     @staticmethod
-    def hertz_to_mel(f):
+    def hertz_to_mel(hertz: float):
         """
-        Gibt die Mel-Frequenz von der linearen Hertz-Frequenz zurück
-
-        :param f: Frequenzwert oder Array in Hertz
-        :return: Mel-Frequenzwert oder Array
+        Get the mel frequency from the hertz frequency
         """
-        return 2595.0 * np.log10(1 + (f / 700.0))
+        return 2595.0 * np.log10(1 + (hertz / 700.0))
 
     @staticmethod
-    def mel_to_hertz(m):
+    def mel_to_hertz(mel: float):
         """
-        Gibt die Hz-Frequenz von der Mel-Frequenz zurück
-
-        :param m: Mel-Frequenzwert oder Array
-        :return: Frequenzwert oder Array in Hertz
+        Get the hertz frequency from the mel frequency
         """
-        return 700.0 * (10 ** (m / 2595.0) - 1)
+        return 700.0 * (10 ** (mel / 2595.0) - 1)
 
     @staticmethod
     def get_mel_frequencies(num_bands, freq_min, freq_max):
@@ -56,11 +50,10 @@ class Melbank:
 
     def _compute_mel_matrix(self, num_fft_bands=512):
         """
-        Erstellt eine Matrix für das Mel-Spektrum
+        Create a 2d mel matrix
 
-        :param num_fft_bands: Anzahl der FFT-Bänder (Def. 512)
-        :param sample_rate: Sample-Rate für das zu verwendende Signal
-        :return: MelMatrix
+        :param num_fft_bands: Amount of fft bins
+        :return: A mel matrix
         """
 
         center_frequencies_mel, lower_edges_mel, upper_edges_mel = \
@@ -103,6 +96,17 @@ class Melbank:
                  smoothing: tuple[float, float] = None,
                  threshold_filter: bool = True
                  ):
+        """
+        Create a new melbank for an input stream
+        :param bins: The amount if bins along the melbank.
+        :param sample_rate: The sample rate of the input stream.
+        :param min_freq: The minimum frequency which should be captured.
+        :param max_freq: The maximum frequency which should be captured.
+        :param gain: Gain normalization with a rise factor and and a decay factor. See :class:`SingleExponentialFilter`
+        :param smoothing: smoothing over time with a rise factor and a decay factor. See :class:`DimensionalExponentialFilter`
+        :param threshold_filter: If a threshold filter should be used to reduce white noise.
+        """
+
         self.bins = bins
         self.sample_rate = sample_rate
         self.min_freq: int = min_freq
@@ -122,6 +126,9 @@ class Melbank:
         self.use_threshold = True if threshold_filter else None
 
     def get_melbank_from_signal(self, power_spectrum: np.ndarray) -> np.ndarray:
+        """
+        Get the melbank spectrum from the power spectrum
+        """
 
         # Generate and apply the mel matrix
         matrix = self._compute_mel_matrix(num_fft_bands=len(power_spectrum))

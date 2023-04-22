@@ -4,9 +4,9 @@ from src.colors.effect import ColorEffect, pack_signal
 from src.colors.transition import ColorTransition
 
 
-class SingleColor(ColorEffect):
-    NAME = ""
-    DESCRIPTION = ""
+class StaticColor(ColorEffect):
+    NAME = "Static color"
+    DESCRIPTION = "Applies a static color to the effect"
 
     COLOR = (255, 255, 255)
     TRANSITION_TIME = 20

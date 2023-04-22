@@ -6,12 +6,16 @@ import numpy as np
 
 class SingleExponentialFilter:
     """
-    Custom exponential filter for a single value
+    Exponential filter with a custom rise and decay factor for a single value to create
+    a forcast of the original signal
+
+    For more values see :class:`DimensionalExponentialFilter`
     """
 
-    def __init__(self, start_value: float, alpha_rise: float, alpha_decay: float):
+    def __init__(self, alpha_rise: float, alpha_decay: float, start_value: float = 0.1):
         """
         Create a new exponential filter with a start value
+
         :param start_value: The first value as forcast
         :param alpha_rise: Smooth factor for values which are higher than the current forcast
         :param alpha_decay: Smooth factor for values which are lower than the current forcast
@@ -41,13 +45,16 @@ class SingleExponentialFilter:
 
 class DimensionalExponentialFilter:
     """
-    Custom exponential filter for an array of 1 dimensional values
+    Exponential filter with a custom rise and decay factor for an array of values to create
+    a forcast of the original signal
+
+     For single values see :class:`SingleExponentialFilter`
     """
 
     def __init__(self, start_value: np.ndarray, alpha_rise: float, alpha_decay: float):
         """
         Creates a new 1-dimensional exponential filter with a start array
-        :param start_value: The first array as forcast
+        :param start_value: The first array as forcast. Must have the same length as the signal
         :param alpha_rise: Smooth factor for values which are higher than there current forcast
         :param alpha_decay: Smooth factor for values which are lower than the current forcast
         """

@@ -1,13 +1,13 @@
 import numpy as np
 
-from src.core.input import BufferThread
+from src.core.input import InputStreamThread
 from src.dsp.melbank import Melbank
 from src.effects.effect import AudioEffect
 
 
 class MelbankEffect(AudioEffect):
     NAME = "Melbank"
-    DESCRIPTION = "Visualizes the melbank output"
+    DESCRIPTION = "Displays the melbank output"
 
     GAIN_ALPHA_RISE = 0.99
     GAIN_ALPHA_DECAY = 0.1
@@ -27,7 +27,7 @@ class MelbankEffect(AudioEffect):
             smoothing=self.SMOOTHING
         )
 
-    def update(self):
+    def update(self, config):
         pass
 
     def visualize(self) -> np.ndarray:
