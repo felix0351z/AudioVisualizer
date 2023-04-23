@@ -11,7 +11,7 @@ from src.effects.spectrum import SpectrumEffect
 from src.effects.energy import EnergyEffect
 
 from src.colors.effect import ColorEffect
-from src.colors.single import StaticColor
+from src.colors.single import StaticColorEffect
 
 
 class SingleProgram:
@@ -20,7 +20,7 @@ class SingleProgram:
     ]
 
     COLORS: list[ColorEffect] = [
-        StaticColor()
+        StaticColorEffect()
     ]
 
     def __init__(self, callback: Callable[[np.ndarray], None] = None):

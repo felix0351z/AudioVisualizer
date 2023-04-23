@@ -4,7 +4,7 @@ from src.colors.effect import ColorEffect, pack_signal
 from src.colors.transition import ColorTransition
 
 
-class StaticColor(ColorEffect):
+class StaticColorEffect(ColorEffect):
     NAME = "Static color"
     DESCRIPTION = "Applies a static color to the effect"
 

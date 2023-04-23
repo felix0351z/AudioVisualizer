@@ -1,74 +1,215 @@
 @startuml
 'https://plantuml.com/class-diagram
 
-
-' Stellt ein Program dar, welche nur eine Visualisierung durchführung kann
-class SingleProgram {
-  + SingleProgram() <<constructor>>
-
-  + get_effects()
-  + get_selected_effects()
-  + set_effect(name: String)
-
-  + start()
-  + pause()
+class EffectInformation {
+    + name: str
+    + description: str
 }
 
-' Klasse welche die Inputdaten verarbeitet und analysiert, um diese für die Effekte und Farben Objekte
-' bereitzustellen
-class AudioAnalyser {
-    ' Methodenaufruf welche den momentanen Frame analysiert
-    + process(frame: Float[]): AudioInformation
+abstract class AudioEffect {
+    + NAME: str
+    + DESCRIPTION: str
+    + use_color_render
 
-    ' Untermethoden für die Verarbeitung / Analyse:
-    ' Nimmt den momentane Frame + den Letzten zusammen und legt ein Fenster darauf,
-    - do_framing()
-    ' Führt die FourierTransformation durch und berechnet die Power-Frames
-    - do_fft()
-    ' Erstellt ein Mel-Spektrum aus den Power-Frames und ersetzt die Amplitude zu Dezibel
-    - do_mel()
-    ' Glättet das Signal für eine bessere Informationsdarstellung (Exponential Filter + Gauß-Filter)
-    - do_smoothing()
-}
-'Weitere kleinere EffektAnalyser und Untermethoden möglich z.B. für Rythmikberechnung
+    {abstract} + start()
+    {abstract} + update()
+    {abstract} + visualize()
 
-' Beinhaltet alle nötigen Information über das momentane Frame
-' zur Erstellung des Effekts
-class AudioInformation {
-    ' Momentaner Frame in originaler Wellen-Form
-    + raw: Float[]
-     ' Momentaner Frame im Mel-Spektrum (bereits geglättet)
-    + mel: Float[]
-
-    ' Weitere Rhythmic Informationen wie Energie etc...
+    + activate()
+    + description()
+    + process()
+    + sample_rate()
+    + amount_leds()
+    + power_spectrum()
+    + rms()
 }
 
-' Thread zum Einlesen der Wiedergabemusik mit PyAudio(PortAudio)
-class BufferInputThread {
-    ' Ein Callback muss übergeben werden, welche die Eingangsdaten verarbeitet
-    + BufferInputThread(callback: (raw: Float[]) -> fn) <<constructor>>
+abstract class ColorRender {
+    {abstract + visualize_rgb()
+}
 
-    ' Starten des Thread
+class EnergyEffect {
+    + NAME
+    + DESCRIPTION
+
+    + GAIN_RISE
+    + GAIN_DECAY
+    + SMOOTHING_RISE
+    + SMOOTHING_DECAY
+    + STANDARD_DEVIATION
+
+    + smoothed_rms()
+
+    + start()
+    + update()
+    + visualize()
+}
+
+class MelbankEffect {
+    + NAME
+    + DESCRIPTION
+
+    + GAIN_RISE
+    + GAIN_DECAY
+    + SMOOTHING_RISE
+    + SMOOTHING_DECAY
+
+    + start()
+    + update()
+    + visualize()
+}
+
+class SpectrumEffect {
+    + NAME
+    + DESCRIPTION
+
+    + MIN_FREQ
+    + MAX_FREQ
+
+    + start()
+    + update()
+    + visualize()
+
+
+}
+
+
+AudioEffect <|--  EnergyEffect
+AudioEffect <|-- MelbankEffect
+MelbankEffect <|-- SpectrumEffect
+
+
+class Melbank {
+
+    {static} + hertz_to_mel()
+    {static} + mel_to_hertz()
+    {static} + get_mel_frequencies()
+
+    + Melbank()
+    + get_melbank_from_signal()
+
+    - compute_mel_matrix()
+}
+
+class Filter {
+
+    {static} + pre_emphasis()
+    {static} + auditory_threshold_filter()
+    {static} + point_wise_auditory_threshold_filter()
+
+}
+
+class SingleExponentialFilter {
+    + forcast
+    + alpha_rise
+    + alpha_decay
+
+    + SingleExponentialFilter()
+    + update()
+
+
+}
+
+class DimensionalExponentialFilter {
+    + forcast
+    + alpha_rise
+    + alpha_decay
+
+    + SingleExponentialFilter()
+    + update()
+
+
+}
+
+abstract class ColorEffect {
+    + NAME
+    + DESCRIPTION
+
+    {abstract} + start()
+    {abstract} + update()
+    {abstract} + visualize()
+
+
+}
+
+class StaticColorEffect {
+    + NAME
+    + DESCRIPTION
+
+    + start()
+    + update()
+    + visualize()
+
+
+}
+
+ColorEffect <|--  StaticColorEffect
+
+
+class ColorTransition {
+    + ColorTransition()
+
+    + changeColor()
+    + change_transition_time()
+    + update()
+}
+
+
+class InputStreamThread {
+    + SAMPLE_RATE
+    + CHANNELS
+    + FPS
+
+    + InputStreamThread()
     + run()
+
 }
 
-' Hilfsklasse zur Glättung eines Signals
-class SimpleExponentialFilter
+class SacnSender {
 
-' Beschreibung eines Effekts
-class EffectInfo {
-    + name: String
-    + description: String
+    + SacnSender()
+    + send()
+
 }
 
-abstract class Effect {
-    + info(): EffectInfo
-    + process(data: AudioInformation): Float[]
+class SingleProgram {
+
+    + EFFECTS
+    + COLORS
+
+    + SingleProgram()
+    + get_effects()
+    + get_selected_effect()
+    + set_effect()
+
+    + set_color()
+
+    + start()
+    + pause()
+
+    - process()
 }
 
-abstract class Color
 
 
 
+
+
+'Collection <|-- AbstractCollection
+
+'Collection <|- List
+'AbstractCollection <|- AbstractList
+'AbstractList <|-- ArrayList
+
+'class ArrayList {
+'Object[] elementData
+'size()
+'}
+
+'enum TimeUnit {
+'DAYS
+'HOURS
+'MINUTES
+'}
 
 @enduml
