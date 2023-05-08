@@ -9,6 +9,7 @@ from src.effects.effect import AudioEffect, EffectInformation
 from src.effects.melbank import MelbankEffect
 from src.effects.spectrum import SpectrumEffect
 from src.effects.energy import EnergyEffect
+from src.effects.bass import BassEffect
 
 from src.colors.effect import ColorEffect
 from src.colors.single import StaticColorEffect
@@ -16,7 +17,7 @@ from src.colors.single import StaticColorEffect
 
 class SingleProgram:
     EFFECTS: list[AudioEffect] = [
-        SpectrumEffect(), EnergyEffect(), MelbankEffect()
+        BassEffect(), SpectrumEffect(), EnergyEffect(), MelbankEffect()
     ]
 
     COLORS: list[ColorEffect] = [

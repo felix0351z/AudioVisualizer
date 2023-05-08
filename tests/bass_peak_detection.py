@@ -49,6 +49,7 @@ class BassPeakDetection:
         self.peak_graph = np.tile(0, TIME_LENGTH)
         self.gain_max_graph = np.tile(0, 400)
 
+
         window.start(self.run)
 
     def run(self, raw: np.ndarray):
@@ -67,10 +68,16 @@ class BassPeakDetection:
 
         # If the difference between the original  1.5 times bigger than the smoothed, it's a peak
         value = sum if sum > average*SENSITIVITY else 0.0
-        # Do a gain normalization
-        value /= gain_normalization.update(value)
 
-        value = 0.0 if value < CORRECTION else value
+        gain_normalization.update(value)
+
+        # Check for sound peak
+        value = 0.0 if value < (gain_normalization.forcast/2) else value
+
+        # Do a gain normalization
+        value /= gain_normalization.forcast
+
+        #value = 0.0 if value < CORRECTION else value
 
         self.peak_graph = np.append(self.peak_graph, value)
         self.gain_max_graph = np.append(self.gain_max_graph, gain_normalization.forcast)

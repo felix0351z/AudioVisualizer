@@ -12,6 +12,13 @@ class Melbank:
         self.min_frequency = minimum_frequency
         self.max_frequency = maximum_frequency
         self.last_frame = None
+        self.melbank = melbank.Melbank(
+            bins=bins,
+            sample_rate=48000,
+            min_freq=minimum_frequency,
+            max_freq=maximum_frequency,
+            threshold_filter=False
+        )
 
     def raw_to_mel_signal(self, raw: np.ndarray, threshold_filter: bool = True) -> np.ndarray:
         """
@@ -34,21 +41,7 @@ class Melbank:
         fft_frame = np.abs(np.fft.rfft(windowed))
         power_frames = (fft_frame ** 2)
 
-        mel_matrix = melbank.compute_melmatrix(  # Create a mel matrix with the given configurations
-            num_mel_bands=self.bins,
-            freq_min=self.min_frequency,
-            freq_max=self.max_frequency,
-            num_fft_bands=int(len(fft_frame)),
-            sample_rate=InputStreamThread.SAMPLE_RATE
-        )
-
-        # Multiplication of the mel matrix with power frame to a new matrix, which contains multiple band passed versions of the original power frame
-        mel_frames = np.atleast_2d(power_frames * mel_matrix)
-        # Sum the different band passed versions up to create a one dimensional frame
-        mel_spectrum = np.sum(mel_frames, axis=1)
-
-        self.last_frame = filtered
-        return mel_spectrum
+        return self.melbank.get_melbank_from_signal(power_frames)
 
 
 class TestSender:
