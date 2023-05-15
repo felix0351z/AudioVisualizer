@@ -9,10 +9,8 @@ class MelbankEffect(AudioEffect):
     NAME = "Melbank"
     DESCRIPTION = "Displays the melbank output"
 
-    GAIN_RISE = 0.99
-    GAIN_DECAY = 0.1
-    SMOOTHING_RISE = 0.99
-    SMOOTHING_DECAY = 0.2
+    GAIN = (0.99, 0.1)
+    SMOOTHING = (0.99, 0.2)
 
     # config
 
@@ -20,8 +18,8 @@ class MelbankEffect(AudioEffect):
         self.melbank = Melbank(
             bins=super().amount_leds(),
             sample_rate=super().sample_rate(),
-            gain=(self.GAIN_RISE, self.GAIN_DECAY),
-            smoothing=(self.SMOOTHING_RISE, self.SMOOTHING_DECAY)
+            gain=self.GAIN,
+            smoothing=self.SMOOTHING
         )
 
     def update(self, config):

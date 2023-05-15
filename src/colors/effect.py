@@ -2,6 +2,13 @@ import abc
 import numpy as np
 
 
+def pack_color_with_signal(signal: np.ndarray, color: tuple[int, int, int]) -> np.ndarray:
+    r = np.round(signal * color[0])
+    g = np.round(signal * color[1])
+    b = np.round(signal * color[2])
+    return pack_signal(r, g, b)
+
+
 def pack_signal(r: np.ndarray, g: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     Transpose the color arrays to an single array.
