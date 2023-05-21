@@ -11,12 +11,12 @@ from src.dsp import filter
 class FftTest:
 
     def __init__(self):
-        window = view.Window("Leistungsspektrum Test")
+        window = view.Window("Power Spectrum Test")
 
         x_range = (1, 10 ** 5)
         y_range = (0, 1)
-        self.plot = window.create_plot_item("Amplitudensprektrum", x_range, y_range, log=True)
-        self.psd = window.create_plot_item("Leistungsspektrum", x_range, y_range, log=True)
+        self.plot = window.create_plot_item("Amplitude Spectrum", x_range, y_range, log=True)
+        self.psd = window.create_plot_item("Power Spectrum", x_range, y_range, log=True)
 
         window.start(self.fft)
 

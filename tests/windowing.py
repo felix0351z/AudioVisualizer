@@ -3,6 +3,7 @@ import numpy as np
 from src.utils import view
 from src.dsp import filter
 
+
 # This test will analyse the influence and the importance
 # of a window over the signal.
 # One Graph will show the fourier transform without a window,
@@ -11,12 +12,12 @@ from src.dsp import filter
 class WindowTest:
 
     def __init__(self):
-
         window = view.Window("Windowing Test")
         x_range = (1, 10 ** 5)
         y_range = (0, 1)
         self.plot_none = window.create_plot_item("No Window", x_range, y_range, log=True)
         self.plot_hamming = window.create_plot_item("Hanning Window", x_range, y_range, log=True)
+        self.last_frame = None
 
         window.start(self.test)
 
