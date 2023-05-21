@@ -8,18 +8,18 @@ from src.effects.effect import ColorRender
 from src.colors.effect import pack_color_with_signal
 from src.colors.transition import ColorTransition
 
-from scipy.signal.windows import gaussian
-
 
 class ShineEffect(SpectrumEffect, ColorRender):
-    NAME = ""
-    DESCRIPTION = ""
+    NAME = "Shine"
+    DESCRIPTION = "Spectrum effect which also highlights the specified frequency as an shine up"
 
     SHINE_FREQ = (0, 200)
     SHINE_SMOOTHING = (0.8, 0.15)
 
     MAIN_COLOR = (0, 100, 255)
     SHINE_COLOR = (255, 255, 255)
+
+    TRANSITION_TIME = 3
 
     def start(self):
         sr = super().sample_rate()
@@ -45,6 +45,12 @@ class ShineEffect(SpectrumEffect, ColorRender):
             gain_decay=0.001,
             smoothing=self.SHINE_SMOOTHING
         )
+        self.detector.add_observer(self.peak_detected)
+
+        self.transition = ColorTransition(
+            color=self.MAIN_COLOR,
+            transition_time=self.TRANSITION_TIME
+        )
 
     def update(self, config):
         pass
@@ -54,21 +60,33 @@ class ShineEffect(SpectrumEffect, ColorRender):
         main_frame = self.melbank.get_melbank_from_signal(power_frame)
 
         animation = np.append(np.flip(main_frame), main_frame)
-        return pack_color_with_signal(animation, self.MAIN_COLOR)
+
+        return animation
 
     def get_shine_animation(self):
         power_frame = super().power_spectrum()
         peak_frame = self.shine_melbank.get_melbank_from_signal(power_frame)
-
-        peak_value = self.detector.get_current_value(peak_frame)
+        peak_value = self.detector.update(peak_frame)
         shine_output = peak_value * np.tile(1.0, reps=super().amount_leds())
-        return pack_color_with_signal(shine_output, self.SHINE_COLOR)
+
+        return shine_output
+
+    def peak_detected(self, is_peak):
+        color = self.MAIN_COLOR if is_peak else self.SHINE_COLOR
+        time = self.TRANSITION_TIME*2 if is_peak else self.TRANSITION_TIME
+
+        self.transition.change_transition_time(time)
+        self.transition.change_color(color)
 
     def visualize_rgb(self) -> np.ndarray:
         main_animation = self.get_spectrum_animation()
         shine_animation = self.get_shine_animation()
 
+        # Take the stronger animation of both
         stack = np.stack((main_animation, shine_animation))
         output = np.max(stack, axis=0)
 
-        return output
+        # Update the color transition
+        color = self.transition.update()
+
+        return pack_color_with_signal(output, color)
