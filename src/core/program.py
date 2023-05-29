@@ -4,6 +4,7 @@ from typing import Optional, Callable
 
 from input import InputStreamThread
 import sender
+from src.effects.color_spectrum import ColorSpectrumEffect
 
 from src.effects.effect import AudioEffect, EffectInformation
 from src.effects.melbank import MelbankEffect
@@ -18,7 +19,7 @@ from src.colors.single import StaticColorEffect
 
 class SingleProgram:
     EFFECTS: list[AudioEffect] = [
-        ShineEffect(), BassEffect(), SpectrumEffect(), EnergyEffect(), MelbankEffect()
+        ShineEffect(), BassEffect(), SpectrumEffect(), EnergyEffect(), MelbankEffect(), ColorSpectrumEffect()
     ]
 
     COLORS: list[ColorEffect] = [
