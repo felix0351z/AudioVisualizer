@@ -24,7 +24,8 @@ class ColorTransition:
         """
         Change the current color and start a new transition
         """
-        step_size = np.subtract(self.color, new_color) / self.transition_time
+
+        step_size = np.subtract(new_color, self.color) / self.transition_time
         self.transition = tuple(step_size)
 
         self.step = 0
@@ -41,7 +42,7 @@ class ColorTransition:
         """
 
         # Reset the transition, if it reached the end
-        if self.step > self.transition_time:
+        if self.step >= self.transition_time:
             self.step = 0
             self.transition = None
 
@@ -52,6 +53,5 @@ class ColorTransition:
                 self.transition
             )
             self.step += 1
-            print(f"Color transition update: {self.color}")
 
         return self.color

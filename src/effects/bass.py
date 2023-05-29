@@ -34,7 +34,7 @@ class BassEffect(AudioEffect):
 
     def visualize(self) -> np.ndarray:
         frame = self.melbank.get_melbank_from_signal(super().power_spectrum())
-        output = self.detector.get_current_value(frame)
+        output = self.detector.update(frame)
 
         output *= gaussian(super().amount_leds(), 10, True)
         return output

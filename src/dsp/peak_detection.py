@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 
 from src.dsp import exponential_smoothing
@@ -8,7 +10,8 @@ class PeakDetector:
     Helper class to detect peaks in a spectrum frame
     """
 
-    def __init__(self, accuracy: float = 0.1, sensitivity: float = 1.5, gain_decay: float = 0.001, smoothing: tuple[float, float] = None):
+    def __init__(self, accuracy: float = 0.1, sensitivity: float = 1.5, gain_decay: float = 0.001,
+                 smoothing: tuple[float, float] = None):
         """
         Creates a new peak detector object
         :param accuracy: Defines the type of peaks to detect. From 0.1 to 0.9
@@ -41,7 +44,26 @@ class PeakDetector:
             alpha_decay=smoothing[1]
         )
 
-    def get_current_value(self, frame: np.ndarray):
+        self.observer = None
+        self.peak = False
+
+    def add_observer(self, observer: Callable[[bool], None]):
+        self.observer = observer
+
+    def check_for_peak(self):
+        if self.observer is None:
+            return  # If no one is listening, no peak detection is needed
+
+        if self.peak:  # If a peak is currently going on, check for the end
+            if self.value < 0.1:
+                self.observer(self.peak)
+                self.peak = False
+        else:  # Check for the beginning
+            if self.value > 0.1:
+                self.observer(self.peak)
+                self.peak = True
+
+    def update(self, frame: np.ndarray):
         """
         Get the current peak value
         :param frame: The calculated power frame
@@ -53,17 +75,19 @@ class PeakDetector:
         average_value = self.average_filter.update(sum)
 
         # If the current sum is (sensitivity) times bigger than the average curve, a peak will be delivered.
-        output_value = sum if sum > average_value*self.sensitivity else 0.0
+        output_value = sum if sum > average_value * self.sensitivity else 0.0
 
         # Do a maximum gain update
         self.gain_filter.update(output_value)
 
         # If the delivered value is two times smaller than the highest sum, the peak is too small and will not be counted
-        output_value = 0.0 if output_value < (self.gain_filter.forcast/2) else output_value
+        output_value = 0.0 if output_value < (self.gain_filter.forcast / 2) else output_value
         # Gain normalization
         output_value /= self.gain_filter.forcast
 
         if self.smoothing_filter is not None:
-            return self.smoothing_filter.update(output_value)
+            output_value = self.smoothing_filter.update(output_value)
 
-        return output_value
+        self.value = output_value
+        self.check_for_peak()
+        return self.value
