@@ -11,12 +11,17 @@ from src.dsp import filter
 class FftTest:
 
     def __init__(self):
-        window = view.Window("Power Spectrum Test")
+        window = view.Window("Leistungsspektrum Test")
+        window.qtWindow.setBackground("w")
 
-        x_range = (1, 10 ** 5)
+        x_range = (0, 20000)
         y_range = (0, 1)
-        self.plot = window.create_plot_item("Amplitude Spectrum", x_range, y_range, log=True)
-        self.psd = window.create_plot_item("Power Spectrum", x_range, y_range, log=True)
+        self.plot = window.create_plot_item("Amplitudensprektrum", x_range, y_range, log=True)
+        self.psd = window.create_plot_item("Leistungsspektrum", x_range, y_range, log=True)
+
+        black_pen = window.create_pen((0, 0, 0), width=2)
+        self.plot.setPen(black_pen)
+        self.psd.setPen(black_pen)
 
         window.start(self.fft)
 
