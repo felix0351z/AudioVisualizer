@@ -1,5 +1,6 @@
 @startuml
 'https://plantuml.com/class-diagram
+skinparam classAttributeIconSize 0
 
 class EffectInformation {
     + name: str
@@ -9,66 +10,64 @@ class EffectInformation {
 abstract class AudioEffect {
     + NAME: str
     + DESCRIPTION: str
-    + use_color_render
+    + use_color_render: bool
 
     {abstract} + start()
-    {abstract} + update()
-    {abstract} + visualize()
+    {abstract} + update(config)
+    {abstract} + visualize(): np.ndarray
 
-    + activate()
-    + description()
-    + process()
-    + sample_rate()
-    + amount_leds()
-    + power_spectrum()
-    + rms()
+    + activate(n_led: int, sample_rate: int)
+    + description(): EffectInformation
+    + process(raw: np.ndarray)
+    + sample_rate(): int
+    + amount_leds(): int
+    + power_spectrum(): np.ndarray
+    + rms(): float
 }
 
 abstract class ColorRender {
-    {abstract + visualize_rgb()
+    {abstract} + visualize_rgb(): np.ndarray
 }
 
 class EnergyEffect {
-    + NAME
-    + DESCRIPTION
+    + NAME: str
+    + DESCRIPTION: str
 
-    + GAIN_RISE
-    + GAIN_DECAY
-    + SMOOTHING_RISE
-    + SMOOTHING_DECAY
-    + STANDARD_DEVIATION
+    + GAIN_RISE: float
+    + GAIN_DECAY: float
+    + SMOOTHING_RISE: float
+    + SMOOTHING_DECAY: float
+    + STANDARD_DEVIATION: int
 
-    + smoothed_rms()
+    + smoothed_rms(): float
 
     + start()
-    + update()
-    + visualize()
+    + update(config))
+    + visualize(): np.ndarray
 }
 
 class MelbankEffect {
-    + NAME
-    + DESCRIPTION
+    + NAME: str
+    + DESCRIPTION: str
 
-    + GAIN_RISE
-    + GAIN_DECAY
-    + SMOOTHING_RISE
-    + SMOOTHING_DECAY
+    + GAIN: tuple[float, float]
+    + SMOOTHING: tuple[float, float]
 
     + start()
-    + update()
-    + visualize()
+    + update(config))
+    + visualize(): np.ndarray
 }
 
 class SpectrumEffect {
-    + NAME
-    + DESCRIPTION
+    + NAME: str
+    + DESCRIPTION: str
 
-    + MIN_FREQ
-    + MAX_FREQ
+    + MIN_FREQ: int
+    + MAX_FREQ: int
 
     + start()
-    + update()
-    + visualize()
+    + update(config))
+    + visualize(): np.ndarray
 
 
 }
@@ -81,64 +80,63 @@ MelbankEffect <|-- SpectrumEffect
 
 class Melbank {
 
-    {static} + hertz_to_mel()
-    {static} + mel_to_hertz()
-    {static} + get_mel_frequencies()
+    {static} + hertz_to_mel(hertz: float): float
+    {static} + mel_to_hertz(mel: float): float
+    {static} + get_mel_frequencies(num_bands: int, freq_min: int, freq_max: int)
 
-    + Melbank()
-    + get_melbank_from_signal()
+    + Melbank(bins: int, sample_rate: int, min_freq: int, max_freq: int, gain: tuple[float, float]?, smoothing: tuple[float, float]?, threshold_filter: bool)
+    + get_melbank_from_signal(power_spectrum: np.ndarray): np.ndarray
 
-    - compute_mel_matrix()
+    - compute_mel_matrix(num_fft_bands: int)
 }
 
 class Filter {
 
-    {static} + pre_emphasis()
-    {static} + auditory_threshold_filter()
-    {static} + point_wise_auditory_threshold_filter()
+    {static} + pre_emphasis(x: np.ndarray): np.ndarray
+    {static} + auditory_threshold_filter(signal: np.ndarray, threshold: float?): np.ndarray
 
 }
 
 class SingleExponentialFilter {
-    + forcast
-    + alpha_rise
-    + alpha_decay
+    + forcast: float
+    + alpha_rise: float
+    + alpha_decay: float
 
-    + SingleExponentialFilter()
-    + update()
+    + SingleExponentialFilter(alpha_rise: float, alpha_decay: float, start_value: float)
+    + update(x: float): float
 
 
 }
 
 class DimensionalExponentialFilter {
-    + forcast
-    + alpha_rise
-    + alpha_decay
+    + forcast: float
+    + alpha_rise: float
+    + alpha_decay: float
 
-    + SingleExponentialFilter()
-    + update()
+    + SingleExponentialFilter(alpha_rise: float, alpha_decay: float, start_value: np.ndarray)
+    + update(x: np.ndarray): np.ndarray
 
 
 }
 
 abstract class ColorEffect {
-    + NAME
-    + DESCRIPTION
+    + NAME: str
+    + DESCRIPTION: str
 
     {abstract} + start()
-    {abstract} + update()
-    {abstract} + visualize()
+    {abstract} + update(config))
+    {abstract} + visualize(signal: np.ndarray): np.ndarray
 
 
 }
 
 class StaticColorEffect {
-    + NAME
-    + DESCRIPTION
+    + NAME: str
+    + DESCRIPTION: str
 
     + start()
-    + update()
-    + visualize()
+    + update(config))
+    + visualize(signal: np.ndarray): np.ndarray
 
 
 }
@@ -147,69 +145,47 @@ ColorEffect <|--  StaticColorEffect
 
 
 class ColorTransition {
-    + ColorTransition()
+    + ColorTransition(color: tuple[int, int, int], transition_time: int)
 
-    + changeColor()
-    + change_transition_time()
-    + update()
+    + changeColor(new_color: tuple[int, int, int])
+    + change_transition_time(new_transition_time: int)
+    + update(): tuple[int, int, int]]
 }
 
 
 class InputStreamThread {
-    + SAMPLE_RATE
-    + CHANNELS
-    + FPS
+    + SAMPLE_RATE: int
+    + CHANNELS: int
+    + FPS: int
 
-    + InputStreamThread()
+    + InputStreamThread(callback)
     + run()
 
 }
 
 class SacnSender {
 
-    + SacnSender()
-    + send()
+    + SacnSender(universe: int?)
+    + send(transposed_signal: np.ndarray)
 
 }
 
 class SingleProgram {
 
-    + EFFECTS
-    + COLORS
+    + EFFECTS: list[AudioEffect]
+    + COLORS: list[ColorEffect]
 
-    + SingleProgram()
-    + get_effects()
-    + get_selected_effect()
-    + set_effect()
+    + SingleProgram(callback)
+    + get_effects(): list[EffectInformation]
+    + get_selected_effect(): EffectInformation
+    + set_effect(position: int)
 
-    + set_color()
+    + set_color(position: int))
 
     + start()
     + pause()
 
-    - process()
+    - process(raw: np.ndarray))
 }
-
-
-
-
-
-
-'Collection <|-- AbstractCollection
-
-'Collection <|- List
-'AbstractCollection <|- AbstractList
-'AbstractList <|-- ArrayList
-
-'class ArrayList {
-'Object[] elementData
-'size()
-'}
-
-'enum TimeUnit {
-'DAYS
-'HOURS
-'MINUTES
-'}
 
 @enduml
