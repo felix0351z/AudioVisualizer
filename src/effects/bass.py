@@ -7,6 +7,9 @@ from scipy.signal.windows import gaussian
 
 
 class BassEffect(AudioEffect):
+    NAME = "Bass"
+    DESCRIPTION = "Only visualize the bass"
+
     MIN_FREQ = 0
     MAX_FREQ = 200
 

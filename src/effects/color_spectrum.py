@@ -17,6 +17,8 @@ class ColorSpectrumEffect(SpectrumEffect, ColorRender):
     def start(self):
         self.melbank = Melbank(
             bins=super().amount_leds(),
+            min_freq=super().MIN_FREQ,
+            max_freq=super().MAX_FREQ,
             sample_rate=super().sample_rate(),
             gain=self.GAIN,
             smoothing=self.SMOOTHING
