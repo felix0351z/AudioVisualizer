@@ -17,6 +17,7 @@ If your wish to read our documentation to the seminar work, you will find it [he
 ## Demo
 
 ![Visualizer Preview](preview.gif)
+
 Watch the full video on [YouTube](https://www.youtube.com/watch?v=M1xNktjkvWU)
 
 ## How does it work?
