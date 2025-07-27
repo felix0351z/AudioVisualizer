@@ -16,7 +16,7 @@ If your wish to read our documentation to the seminar work, you will find it [he
 
 ## Demo
 
-![Preview](https://github.com/user-attachments/assets/7c5c3ad7-c655-46f7-905a-4897d45407ea)
+ https://github.com/user-attachments/assets/7c5c3ad7-c655-46f7-905a-4897d45407ea.mp4
 
 Watch on [YouTube](https://www.youtube.com/watch?v=M1xNktjkvWU)
 
