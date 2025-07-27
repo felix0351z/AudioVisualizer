@@ -5,7 +5,7 @@
 
 This project was developed during my seminar work about music visualization and representation. It's a simple program with 
 a few effects for visualising the audio output from your device on a led strip.
-This project is especially designed for people who want to start to code in the field of music visualisation / digital signal processing.
+This project was specifically designed to better understand the concepts of audio processing and visualization 
 The code therefore is well documented.
 But of course everybody else can also use this project and have fun with it :)
 
@@ -85,12 +85,10 @@ Make sure your microcontroller has sACN over multicast enabled. If your wish to 
 
 ## Issues and Future
 
-This project was developed with the intention to help other ongoing programmers to start in the field of music visualization/digital signal processing during my seminar work.
-Because of that, regular updates are not planned currently. 
+As mentioned at the beginning, this project was developed as part of my seminar work in order to better understand the world of audio processing and music visualization.
+For this reason, no regular updates are planned. 
 
-I will do some small updates in the future for sure (a better gui for example), but not big ones.
-If your wish to extend this project or build a new one, feel free to create a fork or use the program code from my program
-
+If this project can help anyone to get a better understanding about audio processing, I would be very grateful. If your wish to extend this project or build a new one, feel free to create a fork or use my code for your next project.
 
 
 
