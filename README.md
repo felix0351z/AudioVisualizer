@@ -40,7 +40,6 @@ To use the application on your computer you need:
 
 
 - Recommended but optional: Extra power supply to prevent the current from flowing through the whole esp. Without this, the esp doesn't deliver the maximum 5V (Only 3.3V) and he could get hot.
-- I build an adapter circuit to solve this issue: [esp32-led](https://github.com/felix0351z/esp32-led)
 
 ## Install the dependencies 
 
