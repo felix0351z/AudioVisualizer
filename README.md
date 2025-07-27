@@ -3,11 +3,10 @@
 
 ## A simple python application for visualising music on a led strip
 
-This project was developed during my seminar work about music visualization and representation. It's a simple program with 
+This project was developed as part of my seminar work about music visualization and representation. It's a simple program with 
 a few effects for visualising the audio output from your device on a led strip.
 This project was specifically designed to better understand the concepts of audio processing and visualization 
 The code therefore is well documented.
-But of course everybody else can also use this project and have fun with it :)
 
 In addition, I want to give some credits to the projects [LedFx](https://github.com/LedFx/LedFx) and [Audio Reactive LED Strip](https://github.com/scottlawsonbc/audio-reactive-led-strip)
 who helped me to understand the practical usage of many concepts.
