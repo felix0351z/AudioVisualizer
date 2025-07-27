@@ -16,12 +16,11 @@ If your wish to read our documentation to the seminar work, you will find it [he
 
 ## Demo
 
-![Visualizer Preview](preview.gif)
+![Preview](https://github.com/user-attachments/assets/7c5c3ad7-c655-46f7-905a-4897d45407ea)
 
-Watch the full video on [YouTube](https://www.youtube.com/watch?v=M1xNktjkvWU)
+Watch on [YouTube](https://www.youtube.com/watch?v=M1xNktjkvWU)
 
 ## How does it work?
-
 The program takes the audio signal from your preferred input device and analyzes it. If your wish to visualize your music output on your pc, enable and set the input device Stereomix as the default device.
 Stereomix takes the output from your soundcard and loops it to the input again
 
